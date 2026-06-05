@@ -31,11 +31,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   void initState() {
     super.initState();
     final user = ref.read(authProvider).user;
-    _initialName = user?['full_name'] ?? user?['name'] ?? '';
-    _email = user?['email'] ?? '';
-    _initialPhone = user?['phone'] ?? user?['phone_number'] ?? '';
-    _avatarUrl = user?['avatar_url'];
-    
+    _initialName =
+        user?['full_name']?.toString() ?? user?['name']?.toString() ?? '';
+    _email = user?['email']?.toString() ?? '';
+    _initialPhone =
+        user?['phone']?.toString() ?? user?['phone_number']?.toString() ?? '';
+    _avatarUrl = user?['avatar_url']?.toString();
+
     _nameController = TextEditingController(text: _initialName);
     _phoneController = TextEditingController(text: _initialPhone);
   }
@@ -65,7 +67,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memilih gambar: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Gagal memilih gambar: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -105,36 +110,57 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _confirmSaveProfile() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final currentName = _nameController.text.trim();
     final currentPhone = _phoneController.text.trim();
 
-    if (currentName == _initialName && 
-        currentPhone == _initialPhone && 
+    if (currentName == _initialName &&
+        currentPhone == _initialPhone &&
         _selectedImageBytes == null) {
       if (context.mounted) context.pop();
       return;
     }
-    
+
     final shouldSave = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Simpan Perubahan?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          content: const Text('Apakah Anda yakin ingin menyimpan perubahan profil ini?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Simpan Perubahan?',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: const Text(
+            'Apakah Anda yakin ingin menyimpan perubahan profil ini?',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF1B4332),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Ya, Simpan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              child: const Text(
+                'Ya, Simpan',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         );
@@ -200,11 +226,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       );
 
       // 3. Update local auth provider state
-      ref.read(authProvider.notifier).updateProfileData(
-        name: name,
-        phone: phone,
-        avatarUrl: uploadedUrl ?? _avatarUrl,
-      );
+      ref
+          .read(authProvider.notifier)
+          .updateProfileData(
+            name: name,
+            phone: phone,
+            avatarUrl: uploadedUrl ?? _avatarUrl,
+          );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -246,168 +274,221 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ),
         title: const Text(
           'Edit Profil',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1B4332)))
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF1B4332)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Form(
                 key: _formKey,
-                child: Column(
-                  children: [
-                    // Profile Photo Edit
-                    Center(
-                      child: GestureDetector(
-                        onTap: _showImagePickerOptions,
-                        child: Column(
-                          children: [
-                            Stack(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final role = ref.watch(authProvider).role;
+                    return Column(
+                      children: [
+                        // Profile Photo Edit
+                        Center(
+                          child: GestureDetector(
+                            onTap: _showImagePickerOptions,
+                            child: Column(
                               children: [
-                                Container(
-                                  width: 80,
-                                  height: 80,
-                                  clipBehavior: Clip.antiAlias,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.black87,
-                                  ),
-                                  child: ClipOval(
-                                    child: _selectedImageBytes != null
-                                        ? Image.memory(
-                                            _selectedImageBytes!,
-                                            fit: BoxFit.cover,
-                                            width: 80,
-                                            height: 80,
-                                          )
-                                        : (_avatarUrl != null && _avatarUrl!.isNotEmpty)
+                                Stack(
+                                  children: [
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      clipBehavior: Clip.antiAlias,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Colors.black87,
+                                      ),
+                                      child: ClipOval(
+                                        child: _selectedImageBytes != null
+                                            ? Image.memory(
+                                                _selectedImageBytes!,
+                                                fit: BoxFit.cover,
+                                                width: 80,
+                                                height: 80,
+                                              )
+                                            : (_avatarUrl != null &&
+                                                  _avatarUrl!.isNotEmpty)
                                             ? Image.network(
                                                 _avatarUrl!,
                                                 fit: BoxFit.cover,
                                                 width: 80,
                                                 height: 80,
-                                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                                  Icons.broken_image,
-                                                  color: Colors.white,
-                                                  size: 40,
-                                                ),
+                                                errorBuilder:
+                                                    (
+                                                      context,
+                                                      error,
+                                                      stackTrace,
+                                                    ) => const Icon(
+                                                      Icons.broken_image,
+                                                      color: Colors.white,
+                                                      size: 40,
+                                                    ),
                                               )
-                                            : const Icon(Icons.person, color: Colors.white, size: 50),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF1B4332),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(color: Colors.white, width: 2),
+                                            : const Icon(
+                                                Icons.person,
+                                                color: Colors.white,
+                                                size: 50,
+                                              ),
+                                      ),
                                     ),
-                                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 12),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF1B4332),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: Colors.white,
+                                            width: 2,
+                                          ),
+                                        ),
+                                        child: const Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.white,
+                                          size: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Ubah Foto',
+                                  style: TextStyle(
+                                    color: Color(0xFF1B4332),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Ubah Foto',
-                              style: TextStyle(
-                                color: Color(0xFF1B4332),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Form Container
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.grey[200]!),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildTextField(
-                            label: 'NAMA LENGKAP',
-                            controller: _nameController,
-                            validator: (val) => (val == null || val.isEmpty) ? 'Nama tidak boleh kosong' : null,
                           ),
-                          const SizedBox(height: 20),
-                          // Email is read-only
-                          Column(
+                        ),
+                        const SizedBox(height: 32),
+
+                        // Form Container
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'ALAMAT EMAIL',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey[600],
-                                  letterSpacing: 1.1,
-                                ),
+                              _buildTextField(
+                                label: 'NAMA LENGKAP',
+                                controller: _nameController,
+                                validator: (val) => (val == null || val.isEmpty)
+                                    ? 'Nama tidak boleh kosong'
+                                    : null,
                               ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                initialValue: _email,
-                                readOnly: true,
-                                style: const TextStyle(fontSize: 14, color: Colors.black54),
-                                decoration: InputDecoration(
-                                  fillColor: Colors.grey[100],
-                                  filled: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Colors.grey[200]!),
+                              const SizedBox(height: 20),
+                              // Email is read-only
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'ALAMAT EMAIL',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey[600],
+                                      letterSpacing: 1.1,
+                                    ),
                                   ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(color: Colors.grey[200]!),
+                                  const SizedBox(height: 8),
+                                  TextFormField(
+                                    initialValue: _email,
+                                    readOnly: true,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.black54,
+                                    ),
+                                    decoration: InputDecoration(
+                                      fillColor: Colors.grey[100],
+                                      filled: true,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[200]!,
+                                        ),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                          color: Colors.grey[200]!,
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
+                              if (role != 'admin') ...[
+                                const SizedBox(height: 20),
+                                _buildTextField(
+                                  label: 'NOMOR TELEPON',
+                                  controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                ),
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          _buildTextField(
-                            label: 'NOMOR TELEPON',
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                        ),
+                        const SizedBox(height: 32),
 
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1B4332),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 0,
+                        // Save Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1B4332),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            onPressed: _confirmSaveProfile,
+                            icon: const Icon(
+                              Icons.save,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                            label: const Text(
+                              'Simpan Perubahan',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
                         ),
-                        onPressed: _confirmSaveProfile,
-                        icon: const Icon(Icons.save, color: Colors.white, size: 18),
-                        label: const Text(
-                          'Simpan Perubahan',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -439,7 +520,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           keyboardType: keyboardType,
           style: const TextStyle(fontSize: 14, color: Colors.black87),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.grey[300]!),
