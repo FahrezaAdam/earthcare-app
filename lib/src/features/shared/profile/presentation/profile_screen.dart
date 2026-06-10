@@ -273,6 +273,16 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 1, thickness: 1),
                   ],
+                  if (authState.role == 'citizen' || authState.role == 'warga') ...[
+                    _buildMenuItem(
+                      icon: Icons.help_outline,
+                      title: 'Pusat Bantuan',
+                      onTap: () {
+                        context.push('/help-center');
+                      },
+                    ),
+                    const Divider(height: 1, thickness: 1),
+                  ],
                   _buildMenuItem(
                     icon: Icons.logout,
                     title: 'Keluar',

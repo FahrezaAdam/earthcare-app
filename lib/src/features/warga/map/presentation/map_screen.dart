@@ -108,7 +108,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      appBar: userRole == 'warga' ? AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -138,7 +138,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           ),
         ),
         actions: const [NotificationBellButton(), SizedBox(width: 8)],
-      ),
+      ) : null,
       body: Column(
         children: [
           // ===== MAP (takes remaining space) =====
@@ -269,9 +269,34 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ),
                 ),
 
+                // Search Bar (Petugas Only)
+                if (userRole != 'warga')
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 16,
+                    left: 16,
+                    right: 16,
+                    child: Container(
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
+                      ),
+                      child: TextField(
+                        decoration: InputDecoration(
+                          hintText: 'Cari masalah lingkungan...',
+                          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // Urgensi Legend
                 Positioned(
-                  top: 80,
+                  top: userRole == 'warga' ? 16 : MediaQuery.of(context).padding.top + 80,
                   left: 16,
                   child: Container(
                     padding: const EdgeInsets.all(12),

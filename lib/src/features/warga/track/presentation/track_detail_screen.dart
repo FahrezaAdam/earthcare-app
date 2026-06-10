@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
 import '../../report/data/report_model.dart';
 import '../../report/data/report_provider.dart';
 import '../../report/data/report_repository.dart';
 import '../../../shared/auth/data/auth_provider.dart';
+import '../../../petugas/dashboard/data/status_repository.dart'; // To get status history
 
-class TrackDetailScreen extends ConsumerWidget {
+class TrackDetailScreen extends ConsumerStatefulWidget {
   final String title;
   final String ticketId;
   final ReportModel? report;
@@ -19,20 +21,153 @@ class TrackDetailScreen extends ConsumerWidget {
     this.report,
   });
 
-  int _getStepIndex(String status) {
-    switch (status.toLowerCase()) {
-      case 'received': return 0;
-      case 'verified': return 1;
-      case 'assigned': return 1;
-      case 'in_progress': return 2;
-      case 'resolved': return 3;
-      default: return 0;
+  @override
+  ConsumerState<TrackDetailScreen> createState() => _TrackDetailScreenState();
+}
+
+class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
+  List<dynamic> _history = [];
+  bool _isLoadingHistory = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    if (widget.report == null) return;
+    setState(() => _isLoadingHistory = true);
+    try {
+      final repo = ref.read(statusRepositoryProvider);
+      final history = await repo.getStatusHistory(widget.report!.id);
+      if (mounted) setState(() => _history = history);
+    } catch (e) {
+      debugPrint('Error loading history: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingHistory = false);
     }
   }
 
+  String _formatTime(dynamic dateStr) {
+    if (dateStr == null) return '';
+    final date = DateTime.tryParse(dateStr.toString())?.toLocal() ?? DateTime.now();
+    return DateFormat('dd MMM yyyy, HH:mm').format(date);
+  }
+
+  List<Widget> _buildDynamicTimeline() {
+    final List<Widget> items = [];
+    final report = widget.report;
+    if (report == null) return items;
+
+    // 1. Diterima
+    final receivedHist = _history.where((h) => h['status'] == 'received').toList();
+    items.add(_buildTimelineItem(
+      icon: Icons.play_circle_fill,
+      isActive: true,
+      title: 'Diterima',
+      time: receivedHist.isNotEmpty ? _formatTime(receivedHist.last['created_at']) : _formatTime(report.time),
+      description: 'Laporan masuk ke sistem EarthCare.',
+      isFirst: true,
+    ));
+
+    // 2. Diverifikasi
+    final verifiedHist = _history.where((h) => h['status'] == 'verified').toList();
+    if (verifiedHist.isNotEmpty) {
+      items.add(_buildTimelineItem(
+        icon: Icons.verified_user,
+        isActive: true,
+        title: 'Diverifikasi',
+        time: _formatTime(verifiedHist.last['created_at']),
+        description: verifiedHist.last['note'] ?? 'Admin memvalidasi keaslian laporan.',
+      ));
+    } else if (report.status.toLowerCase() == 'received') {
+      items.add(_buildTimelineItem(
+        icon: Icons.verified_user,
+        isActive: false,
+        title: 'Diverifikasi',
+        time: '',
+        description: 'Menunggu proses verifikasi oleh admin.',
+      ));
+    }
+
+    // 3. Ditugaskan
+    final assignedHist = _history.where((h) => h['status'] == 'assigned').toList();
+    if (assignedHist.isNotEmpty) {
+      items.add(_buildTimelineItem(
+        icon: Icons.assignment_ind,
+        isActive: true,
+        title: 'Ditugaskan',
+        time: _formatTime(assignedHist.last['created_at']),
+        description: assignedHist.last['note'] ?? 'Laporan diteruskan ke petugas.',
+      ));
+    } else if (['received', 'verified'].contains(report.status.toLowerCase())) {
+      items.add(_buildTimelineItem(
+        icon: Icons.assignment_ind,
+        isActive: false,
+        title: 'Ditugaskan',
+        time: '',
+        description: 'Menunggu penugasan ke petugas terkait.',
+      ));
+    }
+
+    // 4. Dalam Penanganan
+    // If chronologically top-to-bottom, we want the OLDEST progress first, NEWEST progress last.
+    // _history is ordered ASC (oldest first) from backend: `.order("created_at", { ascending: true })`.
+    final progressHist = _history.where((h) => h['status'] == 'in_progress').toList();
+    if (progressHist.isNotEmpty) {
+      for (var h in progressHist) {
+        items.add(_buildTimelineItem(
+          icon: Icons.build_circle,
+          isActive: true,
+          title: 'Dalam Penanganan',
+          time: _formatTime(h['created_at']),
+          description: h['note'] ?? 'Tim Lapangan sedang melakukan penanganan di lokasi.',
+          hasImage: h['photo_url'] != null,
+          imageUrl: h['photo_url'],
+        ));
+      }
+    } else if (['received', 'verified', 'assigned'].contains(report.status.toLowerCase())) {
+      items.add(_buildTimelineItem(
+        icon: Icons.build_circle,
+        isActive: false,
+        title: 'Dalam Penanganan',
+        time: '',
+        description: 'Tim unit reaksi cepat akan menangani laporan di lokasi.',
+      ));
+    }
+
+    // 5. Selesai
+    final resolvedHist = _history.where((h) => h['status'] == 'resolved').toList();
+    if (resolvedHist.isNotEmpty) {
+      for (var h in resolvedHist) {
+        items.add(_buildTimelineItem(
+          icon: Icons.check_circle_outline,
+          isActive: true,
+          title: 'Selesai',
+          time: _formatTime(h['created_at']),
+          description: h['note'] ?? 'Laporan telah ditangani dan dinyatakan selesai.',
+          hasImage: h['photo_url'] != null,
+          imageUrl: h['photo_url'],
+          isLast: true,
+        ));
+      }
+    } else {
+      items.add(_buildTimelineItem(
+        icon: Icons.check_circle_outline,
+        isActive: false,
+        title: 'Selesai',
+        time: '',
+        description: 'Laporan akan ditutup setelah pengerjaan selesai.',
+        isLast: true,
+      ));
+    }
+
+    return items;
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final step = report != null ? _getStepIndex(report!.status) : 0;
+  Widget build(BuildContext context) {
     final currentUserId = ref.watch(authProvider).user?['id'];
     
     return Scaffold(
@@ -68,36 +203,13 @@ class TrackDetailScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              report?.title ?? title,
+              widget.report?.title ?? widget.title,
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
 
-            // Stepper Container
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildStep(icon: Icons.assignment, label: 'Diterima', color: const Color(0xFF1B4332), isCompleted: step > 0, isCurrent: step == 0),
-                  _buildLine(isCompleted: step > 0),
-                  _buildStep(icon: Icons.verified_user, label: 'Diverifikasi', color: const Color(0xFF1B4332), isCompleted: step > 1, isCurrent: step == 1),
-                  _buildLine(isCompleted: step > 1),
-                  _buildStep(icon: Icons.build, label: 'Diproses', color: Colors.lightGreen, isCompleted: step > 2, isCurrent: step == 2),
-                  _buildLine(isCompleted: step > 2),
-                  _buildStep(icon: Icons.check, label: 'Selesai', color: Colors.green, isCompleted: step > 3, isCurrent: step == 3),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
             // Foto Laporan Card
-            if (report != null && report!.imageUrl.isNotEmpty)
+            if (widget.report != null && widget.report!.imageUrl.isNotEmpty)
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -113,97 +225,53 @@ class TrackDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Foto Laporan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          const Text('Foto Laporan Warga', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 4),
                           Text('Dokumentasi awal yang Anda lampirkan.', style: TextStyle(fontSize: 11, color: Colors.grey[600])),
                         ],
                       ),
                     ),
-                    // Image
                     ClipRRect(
                       borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
                       child: Image.network(
-                        report!.imageUrl,
+                        widget.report!.imageUrl,
                         width: double.infinity,
                         height: 200,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.broken_image, color: Colors.grey),
-                          );
-                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
+              
             const SizedBox(height: 24),
 
-            // Riwayat Update Card
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[200]!),
+            if (_isLoadingHistory)
+              const Center(child: CircularProgressIndicator())
+            else ...[
+              const Text(
+                'Status Penanganan',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Riwayat Update', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 24),
-                  
-                  _buildTimelineItem(
-                    title: 'Selesai',
-                    time: report?.time ?? '',
-                    desc: 'Laporan telah ditangani dan dinyatakan selesai.',
-                    isLast: false,
-                    isCurrent: step == 3,
-                    isPast: step > 3,
-                    color: Colors.green,
-                  ),
-                  _buildTimelineItem(
-                    title: 'Pembersihan Sedang Berlangsung',
-                    time: report?.time ?? '',
-                    desc: 'Tim unit reaksi cepat sedang menangani laporan di lokasi.',
-                    isLast: false,
-                    isCurrent: step == 2,
-                    isPast: step > 2,
-                    color: Colors.lightGreen,
-                  ),
-                  _buildTimelineItem(
-                    title: 'Laporan Telah Diverifikasi',
-                    time: report?.time ?? '',
-                    desc: 'Validasi lokasi dan jenis pelanggaran selesai dilakukan.',
-                    isLast: false,
-                    isCurrent: step == 1,
-                    isPast: step > 1,
-                    color: const Color(0xFF1B4332),
-                  ),
-                  _buildTimelineItem(
-                    title: 'Laporan Dikirim',
-                    time: report?.time ?? '',
-                    desc: 'Terima kasih atas kontribusi Anda terhadap bumi.',
-                    isLast: true,
-                    isCurrent: step == 0,
-                    isPast: step > 0,
-                    color: const Color(0xFF1B4332),
-                  ),
-                ],
-              ),
-            ),
+              const SizedBox(height: 16),
+              ..._buildDynamicTimeline(),
+            ],
+
           ],
         ),
       ),
-      bottomNavigationBar: (report != null && report!.status == 'received' && report!.userId == currentUserId)
+      bottomNavigationBar: (widget.report != null && widget.report!.status == 'received' && widget.report!.userId == currentUserId)
           ? Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -5)),
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5)),
                 ],
               ),
               child: ElevatedButton(
@@ -235,7 +303,7 @@ class TrackDetailScreen extends ConsumerWidget {
                   if (confirm == true && context.mounted) {
                     try {
                       final repo = ref.read(reportRepositoryProvider);
-                      await repo.deleteReport(report!.id);
+                      await repo.deleteReport(widget.report!.id);
                       ref.invalidate(reportsProvider('me'));
                       ref.invalidate(reportsProvider('all'));
                       if (context.mounted) {
@@ -260,74 +328,99 @@ class TrackDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStep({required IconData icon, required String label, required Color color, required bool isCompleted, bool isCurrent = false}) {
-    final isFuture = !isCompleted && !isCurrent;
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isFuture ? Colors.grey[100] : color.withValues(alpha: isCurrent ? 0.2 : 1.0),
-            shape: BoxShape.circle,
+  Widget _buildTimelineItem({
+    required IconData icon,
+    required bool isActive,
+    required String title,
+    required String time,
+    required String description,
+    bool isFirst = false,
+    bool isLast = false,
+    bool hasImage = false,
+    String? imageUrl,
+  }) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon and Line
+          Column(
+            children: [
+              Icon(
+                icon,
+                color: isActive ? const Color(0xFF1B4332) : Colors.grey[300],
+                size: 28,
+              ),
+              if (!isLast)
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: isActive ? const Color(0xFF1B4332) : Colors.grey[300],
+                  ),
+                ),
+            ],
           ),
-          child: Icon(icon, color: isFuture ? Colors.grey[400] : (isCompleted ? Colors.white : color), size: 16),
-        ),
-        const SizedBox(height: 8),
-        Text(label, style: TextStyle(fontSize: 10, fontWeight: isFuture ? FontWeight.normal : FontWeight.bold, color: isFuture ? Colors.grey : Colors.black87)),
-      ],
-    );
-  }
-
-  Widget _buildLine({required bool isCompleted}) {
-    return Expanded(
-      child: Container(
-        height: 2,
-        color: isCompleted ? const Color(0xFF1B4332) : Colors.grey[200],
-        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
+          const SizedBox(width: 16),
+          // Content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: hasImage
+                  ? Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFF1B4332)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isActive ? const Color(0xFF1B4332) : Colors.grey)),
+                              Text(time, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(description, style: TextStyle(fontSize: 13, color: isActive ? Colors.black87 : Colors.grey)),
+                          const SizedBox(height: 12),
+                          if (imageUrl != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                imageUrl,
+                                height: 160,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  height: 160,
+                                  color: Colors.grey[200],
+                                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isActive ? Colors.black87 : Colors.grey)),
+                            if (time.isNotEmpty) Text(time, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(description, style: TextStyle(fontSize: 13, color: isActive ? Colors.black54 : Colors.grey)),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildTimelineItem({required String title, required String time, required String desc, required bool isLast, bool isCurrent = false, bool isPast = false, Color color = const Color(0xFF1B4332)}) {
-    final isFuture = !isCurrent && !isPast;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: isFuture ? Colors.grey[300] : color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 60,
-                color: isFuture ? Colors.grey[200] : color.withAlpha(80),
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: TextStyle(fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600, fontSize: 13, color: isFuture ? Colors.grey[400] : (isCurrent ? Colors.black87 : Colors.grey[800]))),
-                const SizedBox(height: 4),
-                Text(isFuture ? 'Menunggu...' : time, style: TextStyle(fontSize: 10, color: isFuture ? Colors.grey[300] : Colors.grey[500])),
-                const SizedBox(height: 8),
-                Text(desc, style: TextStyle(fontSize: 11, color: isFuture ? Colors.grey[300] : Colors.grey[600], height: 1.4)),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../dashboard/presentation/petugas_dashboard_screen.dart';
 import '../../profile/presentation/petugas_profile_screen.dart';
+import '../../../warga/map/presentation/map_screen.dart';
 
 class PetugasMainScreen extends StatefulWidget {
   const PetugasMainScreen({super.key});
@@ -13,8 +14,8 @@ class _PetugasMainScreenState extends State<PetugasMainScreen> {
   int _currentIndex = 1; // Default to Penugasan tab
 
   final List<Widget> _screens = [
-    // Peta Screen (Placeholder for now)
-    const Center(child: Text('Fitur Peta Belum Tersedia')),
+    // Peta Screen
+    const MapScreen(),
     const PetugasDashboardScreen(),
     const PetugasProfileScreen(),
   ];

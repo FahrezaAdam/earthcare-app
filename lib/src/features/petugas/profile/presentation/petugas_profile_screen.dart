@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../shared/auth/data/auth_provider.dart';
+import '../../../shared/notification/presentation/widgets/notification_bell_button.dart';
 
 class PetugasProfileScreen extends ConsumerWidget {
   const PetugasProfileScreen({super.key});
@@ -16,50 +17,76 @@ class PetugasProfileScreen extends ConsumerWidget {
     final sector = user?['sector'] ?? 'Petugas Lapangan';
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.shield, color: Color(0xFF1B4332)),
-            const SizedBox(width: 8),
-            const Text('EarthCare', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-          ],
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black54),
-            onPressed: () {},
+        centerTitle: true,
+        leadingWidth: 140,
+        leading: Row(
+          children: [
+            const SizedBox(width: 16),
+            const Icon(Icons.eco, color: Color(0xFF1B4332), size: 20),
+            const SizedBox(width: 4),
+            const Text(
+              'EarthCare',
+              style: TextStyle(
+                color: Color(0xFF1B4332),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+        title: const Text(
+          'PROFIL',
+          style: TextStyle(
+            color: Color(0xFF1B4332),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            letterSpacing: 2.0,
           ),
+        ),
+        actions: const [
+          NotificationBellButton(),
+          SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 20),
             // Avatar
             Center(
               child: Stack(
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Colors.grey[200],
-                    backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                    child: avatarUrl == null ? const Icon(Icons.person, size: 50, color: Colors.grey) : null,
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1B4332),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.verified, color: Colors.white, size: 20),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF1B4332),
+                      border: Border.all(color: Colors.green[100]!, width: 4),
+                    ),
+                    child: ClipOval(
+                      child: (avatarUrl != null && avatarUrl.isNotEmpty)
+                          ? Image.network(
+                              avatarUrl,
+                              fit: BoxFit.cover,
+                              width: 100,
+                              height: 100,
+                              errorBuilder: (context, error, stackTrace) => const Icon(
+                                Icons.broken_image,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Colors.white,
+                            ),
                     ),
                   ),
                 ],
@@ -68,98 +95,99 @@ class PetugasProfileScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             Text(
               name,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Verified Guardian since Oct 2023\n$sector',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              user?['email'] ?? '-',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
             ),
-            const SizedBox(height: 32),
-
-            // Stats
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          '124',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1B4332)),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'LAPORAN\nDIPROSES',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1B4332).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'PETUGAS',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B4332),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          '98',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1B4332)),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'SELESAI\n',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey[500]),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
 
-            // Menu Options
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.person_outline, color: Color(0xFF1B4332)),
-              title: const Text('Edit Profil', style: TextStyle(fontWeight: FontWeight.w600)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
-            ),
-            const Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.help_outline, color: Color(0xFF1B4332)),
-              title: const Text('Pusat Bantuan', style: TextStyle(fontWeight: FontWeight.w600)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {},
-            ),
-            const Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Keluar', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.red),
-              onTap: () {
-                ref.read(authProvider.notifier).logout();
-                context.go('/login');
-              },
+            // Menus
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                children: [
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: const Icon(Icons.person_outline, color: Color(0xFF1B4332)),
+                    title: const Text('Edit Profil', style: TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () {
+                      context.push('/edit-profile');
+                    },
+                  ),
+                  const Divider(height: 1, thickness: 1),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Icon(Icons.logout, color: Colors.red[700]),
+                    title: Text('Keluar', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red[700])),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+                            content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  ref.read(authProvider.notifier).logout();
+                                  context.go('/login');
+                                },
+                                child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),

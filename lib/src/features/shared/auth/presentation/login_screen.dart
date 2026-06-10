@@ -17,6 +17,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool obscurePassword = true;
   bool isHoveringRegister = false;
+  bool rememberMe = false;
 
   @override
   void dispose() {
@@ -202,25 +203,57 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-
-                            // Forgot Password
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: () {
-                                  context.push('/forgot-password');
-                                },
-                                child: const Text(
-                                  'Lupa Kata Sandi?',
-                                  style: TextStyle(
-                                    color: Color(0xFF0C3B2E),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                            // Remember Me & Forgot Password
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: Checkbox(
+                                        value: rememberMe,
+                                        activeColor: const Color(0xFF0C3B2E),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            rememberMe = value ?? false;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      'Ingat Saya',
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    context.push('/forgot-password');
+                                  },
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: const Text(
+                                    'Lupa Kata Sandi?',
+                                    style: TextStyle(
+                                      color: Color(0xFF0C3B2E),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 16),
 
                             // Login Button
                             Consumer(

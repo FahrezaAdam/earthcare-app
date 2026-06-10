@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../warga/report/data/report_provider.dart';
 import '../../../warga/report/data/report_model.dart';
 import '../../../shared/auth/data/auth_provider.dart';
+import '../../../shared/notification/presentation/widgets/notification_bell_button.dart';
 
 class PetugasDashboardScreen extends ConsumerWidget {
   const PetugasDashboardScreen({super.key});
@@ -19,15 +20,38 @@ class PetugasDashboardScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Row(
-            children: [
-              const Icon(Icons.shield, color: Color(0xFF1B4332)),
-              const SizedBox(width: 8),
-              const Text('EarthCare Field', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
-            ],
-          ),
           backgroundColor: Colors.white,
           elevation: 0,
+          centerTitle: true,
+          leadingWidth: 140,
+          leading: Row(
+            children: [
+              const SizedBox(width: 16),
+              const Icon(Icons.eco, color: Color(0xFF1B4332), size: 20),
+              const SizedBox(width: 4),
+              const Text(
+                'EarthCare',
+                style: TextStyle(
+                  color: Color(0xFF1B4332),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          title: const Text(
+            'LAPORAN',
+            style: TextStyle(
+              color: Color(0xFF1B4332),
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing: 2.0,
+            ),
+          ),
+          actions: const [
+            NotificationBellButton(),
+            SizedBox(width: 8),
+          ],
           bottom: const TabBar(
             labelColor: Color(0xFF1B4332),
             unselectedLabelColor: Colors.grey,

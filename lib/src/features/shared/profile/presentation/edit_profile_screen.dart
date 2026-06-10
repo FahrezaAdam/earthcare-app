@@ -34,8 +34,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _initialName =
         user?['full_name']?.toString() ?? user?['name']?.toString() ?? '';
     _email = user?['email']?.toString() ?? '';
-    _initialPhone =
-        user?['phone']?.toString() ?? user?['phone_number']?.toString() ?? '';
+    _initialPhone = user?['phone']?.toString() ??
+        user?['phone_number']?.toString() ??
+        user?['phoneNumber']?.toString() ??
+        user?['no_hp']?.toString() ??
+        user?['telepon']?.toString() ??
+        user?['no_telp']?.toString() ??
+        user?['telp']?.toString() ??
+        user?['user_metadata']?['phone']?.toString() ??
+        user?['raw_user_meta_data']?['phone']?.toString() ??
+        '';
     _avatarUrl = user?['avatar_url']?.toString();
 
     _nameController = TextEditingController(text: _initialName);
