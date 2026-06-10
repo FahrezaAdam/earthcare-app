@@ -19,7 +19,10 @@ import '../../features/warga/track/presentation/track_detail_screen.dart';
 import '../../features/shared/profile/presentation/edit_profile_screen.dart';
 import '../../features/shared/profile/presentation/help_center_screen.dart';
 import '../../features/admin/dashboard/presentation/admin_dashboard_screen.dart';
+import '../../features/petugas/main/presentation/petugas_main_screen.dart';
 import '../../features/petugas/dashboard/presentation/petugas_dashboard_screen.dart';
+import '../../features/petugas/report/presentation/petugas_report_detail_screen.dart';
+import '../../features/petugas/profile/presentation/petugas_profile_screen.dart';
 import '../../features/shared/notification/presentation/notification_screen.dart';
 import '../../features/admin/petugas/presentation/admin_add_petugas_screen.dart';
 import '../../features/admin/petugas/presentation/admin_petugas_profile_screen.dart';
@@ -100,8 +103,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/petugas/dashboard',
-        builder: (context, state) => const PetugasDashboardScreen(),
+        path: '/petugas/main',
+        builder: (context, state) => const PetugasMainScreen(),
+      ),
+      GoRoute(
+        path: '/petugas/report-detail',
+        builder: (context, state) {
+          final report = state.extra as ReportModel?;
+          if (report == null) {
+            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+          }
+          return PetugasReportDetailScreen(report: report);
+        },
       ),
       GoRoute(
         path: '/notifications',

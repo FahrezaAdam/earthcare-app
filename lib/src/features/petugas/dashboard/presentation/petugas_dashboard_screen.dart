@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../warga/report/data/report_provider.dart';
-import '../data/status_repository.dart';
 import 'package:go_router/go_router.dart';
+import '../../../warga/report/data/report_provider.dart';
+import '../../../warga/report/data/report_model.dart';
 import '../../../shared/auth/data/auth_provider.dart';
 
 class PetugasDashboardScreen extends ConsumerWidget {
@@ -11,125 +11,245 @@ class PetugasDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reportsAsyncValue = ref.watch(reportsProvider('all'));
+    final authState = ref.watch(authProvider);
+    final userId = authState.user?['id'];
 
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text('Dashboard Petugas', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Colors.red),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
-              context.go('/login');
-            },
+        appBar: AppBar(
+          title: Row(
+            children: [
+              const Icon(Icons.shield, color: Color(0xFF1B4332)),
+              const SizedBox(width: 8),
+              const Text('EarthCare Field', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          bottom: const TabBar(
+            labelColor: Color(0xFF1B4332),
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Color(0xFF1B4332),
+            indicatorWeight: 3,
+            tabs: [
+              Tab(text: 'Baru'),
+              Tab(text: 'Sedang Berjalan'),
+              Tab(text: 'Selesai'),
+            ],
+          ),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Antrean Tugas',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pantau dan terima laporan lingkungan terbaru dari masyarakat.',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: reportsAsyncValue.when(
+                data: (reports) {
+                  // Filter for this officer
+                  final myReports = reports.where((r) => r.assignedOfficerId == userId).toList();
+
+                  final baruReports = myReports.where((r) => r.status.toLowerCase() == 'assigned').toList();
+                  final berjalanReports = myReports.where((r) => r.status.toLowerCase() == 'in_progress').toList();
+                  final selesaiReports = myReports.where((r) => r.status.toLowerCase() == 'resolved').toList();
+
+                  return TabBarView(
+                    children: [
+                      _buildReportList(context, baruReports, 'Baru'),
+                      _buildReportList(context, berjalanReports, 'Sedang Berjalan'),
+                      _buildReportList(context, selesaiReports, 'Selesai'),
+                    ],
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (e, st) => Center(child: Text('Error: $e')),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReportList(BuildContext context, List<ReportModel> reports, String tabType) {
+    if (reports.isEmpty) {
+      return Center(
+        child: Text(
+          'Tidak ada laporan di antrean $tabType.',
+          style: TextStyle(color: Colors.grey[600]),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(20),
+      itemCount: reports.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) {
+        final report = reports[index];
+        return _buildTaskCard(context, report, tabType);
+      },
+    );
+  }
+
+  Widget _buildTaskCard(BuildContext context, ReportModel report, String tabType) {
+    final isSelesai = tabType == 'Selesai';
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      body: reportsAsyncValue.when(
-        data: (reports) {
-          // Petugas typically handles 'assigned', 'in_progress', 'resolved'
-          // For now, let's just show all for demo purposes, or filter by not 'received'
-          final activeReports = reports.where((r) => r.status != 'received').toList();
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with category and time
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 16, color: Colors.orange[800]),
+                    const SizedBox(width: 4),
+                    Text(
+                      _formatCategory(report.category).toUpperCase(),
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange[800]),
+                    ),
+                  ],
+                ),
+                if (!isSelesai)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'MENCEKAM', // Dummy priority badge based on UI
+                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red[800]),
+                    ),
+                  ),
+              ],
+            ),
+          ),
           
-          if (activeReports.isEmpty) {
-            return const Center(child: Text('Belum ada tugas lapangan yang diberikan kepada Anda.'));
-          }
+          // Title and Description
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  report.title,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  report.description ?? 'Laporan warga mengenai pelanggaran di lokasi ini.',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.5),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: activeReports.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final report = activeReports[index];
-              return Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(report.ticketId, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              report.status.toUpperCase(),
-                              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.blue),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(report.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      const SizedBox(height: 4),
-                      Text(report.location, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                      const SizedBox(height: 16),
-                      const Divider(),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text('Ubah Status:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          DropdownButton<String>(
-                            value: report.status.toLowerCase(),
-                            items: const [
-                              DropdownMenuItem(value: 'assigned', child: Text('Ditugaskan', style: TextStyle(fontSize: 12))),
-                              DropdownMenuItem(value: 'in_progress', child: Text('Diproses', style: TextStyle(fontSize: 12))),
-                              DropdownMenuItem(value: 'resolved', child: Text('Selesai', style: TextStyle(fontSize: 12))),
-                            ],
-                            onChanged: (newStatus) async {
-                              if (newStatus == null || newStatus == report.status.toLowerCase()) return;
-                              
-                              // Show loading
-                              showDialog(
-                                context: context,
-                                barrierDismissible: false,
-                                builder: (context) => const Center(child: CircularProgressIndicator()),
-                              );
-                              
-                              try {
-                                final repo = ref.read(statusRepositoryProvider);
-                                await repo.updateStatus(reportId: report.id, status: newStatus);
-                                
-                                if (!context.mounted) return;
-                                Navigator.pop(context); // close dialog
-                                
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Status berhasil diperbarui!'), backgroundColor: Colors.green),
-                                );
-                                
-                                ref.invalidate(reportsProvider('all')); // Refresh list
-                              } catch (e) {
-                                if (!context.mounted) return;
-                                Navigator.pop(context); // close dialog
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
+          const SizedBox(height: 16),
+          
+          // Image preview (if any)
+          if (report.imageUrl.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  report.imageUrl,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 120,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.broken_image, color: Colors.grey),
                   ),
                 ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
+              ),
+            ),
+          
+          const SizedBox(height: 16),
+          const Divider(height: 1),
+          
+          // Footer actions
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
+                    const SizedBox(width: 4),
+                    Text(report.time, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                  ],
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    context.push('/petugas/report-detail', extra: report);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isSelesai ? Colors.grey[300] : const Color(0xFF0A2B1D),
+                    foregroundColor: isSelesai ? Colors.grey[800] : Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    isSelesai ? 'Detail Tugas' : (tabType == 'Baru' ? 'Terima Tugas ->' : 'Update Tugas ->'),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  String _formatCategory(String category) {
+    if (category.isEmpty) return category;
+    return category
+        .split('_')
+        .map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '')
+        .join(' ');
   }
 }

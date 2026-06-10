@@ -276,8 +276,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             final role = ref.read(authProvider).role;
                                             if (role == 'admin') {
                                               context.go('/admin/dashboard');
-                                            } else if (role == 'petugas') {
-                                              context.go('/petugas/dashboard');
+                                            } else if (role == 'petugas' || role == 'officer') {
+                                              context.go('/petugas/main');
                                             } else {
                                               context.go('/dashboard'); // Warga
                                             }
