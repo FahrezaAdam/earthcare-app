@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../warga/map/presentation/map_screen.dart';
 import '../../../shared/profile/presentation/profile_screen.dart';
 import '../../report/presentation/admin_report_screen.dart';
+import '../../petugas/presentation/admin_petugas_screen.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -17,6 +18,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
   late final List<Widget> _screens = [
     const MapScreen(),
     const AdminReportScreen(),
+    const AdminPetugasScreen(),
     const ProfileScreen(),
   ];
 
@@ -43,6 +45,11 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             icon: Icon(Icons.assignment_outlined),
             activeIcon: Icon(Icons.assignment),
             label: 'Laporan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people_outline),
+            activeIcon: Icon(Icons.people),
+            label: 'Petugas',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),

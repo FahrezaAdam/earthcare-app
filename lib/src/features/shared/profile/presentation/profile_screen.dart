@@ -137,118 +137,121 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 32),
 
-            // Statistics Row
-            Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        reportsAsync.when(
-                          data: (_) => Text(
-                            totalReports,
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B4332),
+            if (authState.role != 'admin') ...[
+              // Statistics Row
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          reportsAsync.when(
+                            data: (_) => Text(
+                              totalReports,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
+                            ),
+                            loading: () => const SizedBox(
+                              height: 38,
+                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                            ),
+                            error: (_, __) => const Text(
+                              '-',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
                             ),
                           ),
-                          loading: () => const SizedBox(
-                            height: 38,
-                            child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
-                          ),
-                          error: (_, __) => const Text(
-                            '-',
+                          const SizedBox(height: 4),
+                          Text(
+                            'LAPORAN\nDIKIRIM',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B4332),
+                              color: Colors.grey[600],
+                              letterSpacing: 1.1,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'LAPORAN\nDIKIRIM',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        reportsAsync.when(
-                          data: (_) => Text(
-                            completedReports,
-                            style: const TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B4332),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          reportsAsync.when(
+                            data: (_) => Text(
+                              completedReports,
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
+                            ),
+                            loading: () => const SizedBox(
+                              height: 38,
+                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                            ),
+                            error: (_, __) => const Text(
+                              '-',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
                             ),
                           ),
-                          loading: () => const SizedBox(
-                            height: 38,
-                            child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
-                          ),
-                          error: (_, __) => const Text(
-                            '-',
+                          const SizedBox(height: 4),
+                          Text(
+                            'SELESAI\n',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontSize: 32,
+                              fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1B4332),
+                              color: Colors.grey[600],
+                              letterSpacing: 1.1,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'SELESAI\n',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[600],
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              const SizedBox(height: 32),
+            ],
             const SizedBox(height: 48),
 
             // Menus
@@ -260,22 +263,16 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  _buildMenuItem(
-                    icon: Icons.person_outline,
-                    title: 'Edit Profil',
-                    onTap: () {
-                      context.push('/edit-profile');
-                    },
-                  ),
-                  const Divider(height: 1, thickness: 1),
-                  _buildMenuItem(
-                    icon: Icons.help_outline,
-                    title: 'Pusat Bantuan',
-                    onTap: () {
-                      context.push('/help-center');
-                    },
-                  ),
-                  const Divider(height: 1, thickness: 1),
+                  if (authState.role != 'admin') ...[
+                    _buildMenuItem(
+                      icon: Icons.person_outline,
+                      title: 'Edit Profil',
+                      onTap: () {
+                        context.push('/edit-profile');
+                      },
+                    ),
+                    const Divider(height: 1, thickness: 1),
+                  ],
                   _buildMenuItem(
                     icon: Icons.logout,
                     title: 'Keluar',

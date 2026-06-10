@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image/image.dart' as img_pkg;
 
 class InAppCameraScreen extends StatefulWidget {
   const InAppCameraScreen({super.key});
@@ -121,13 +122,50 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
     if (_controller!.value.isTakingPicture) return;
 
     try {
+      setState(() {
+        _isInitializing = true;
+      });
+
       final XFile picture = await _controller!.takePicture();
+      
+      // Process image to add timestamp
+      final File file = File(picture.path);
+      final bytes = await file.readAsBytes();
+      final decodedImage = img_pkg.decodeImage(bytes);
+      
+      if (decodedImage != null) {
+        final locText = _currentPosition != null 
+            ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' 
+            : 'Unknown';
+        final text = 'EarthCare Evidence\nTime: $_currentTime WIB\nGPS: $locText';
+        
+        img_pkg.drawString(
+          decodedImage,
+          text,
+          font: img_pkg.arial48,
+          x: 40,
+          y: decodedImage.height - 220,
+          color: img_pkg.ColorRgb8(255, 255, 255),
+        );
+        
+        final outBytes = img_pkg.encodeJpg(decodedImage, quality: 90);
+        await file.writeAsBytes(outBytes);
+      }
+
       if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
         // Return the picture path to the previous screen
         context.pop(picture.path);
       }
     } catch (e) {
       debugPrint('Error taking picture: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
     }
   }
 

@@ -21,6 +21,9 @@ import '../../features/shared/profile/presentation/help_center_screen.dart';
 import '../../features/admin/dashboard/presentation/admin_dashboard_screen.dart';
 import '../../features/petugas/dashboard/presentation/petugas_dashboard_screen.dart';
 import '../../features/shared/notification/presentation/notification_screen.dart';
+import '../../features/admin/petugas/presentation/admin_add_petugas_screen.dart';
+import '../../features/admin/petugas/presentation/admin_petugas_profile_screen.dart';
+import '../../features/admin/petugas/data/officer_model.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -103,6 +106,24 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/notifications',
         builder: (context, state) => const NotificationScreen(),
+      ),
+      GoRoute(
+        path: '/admin/petugas/add',
+        builder: (context, state) => const AdminAddPetugasScreen(),
+      ),
+      GoRoute(
+        path: '/admin/petugas/edit',
+        builder: (context, state) {
+          final officer = state.extra as Officer?;
+          return AdminAddPetugasScreen(officer: officer);
+        },
+      ),
+      GoRoute(
+        path: '/admin/petugas/profile',
+        builder: (context, state) {
+          final officer = state.extra as Officer;
+          return AdminPetugasProfileScreen(officer: officer);
+        },
       ),
     ],
   );
