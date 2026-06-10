@@ -16,6 +16,7 @@ class ReportModel {
   final String? reporterName;
   final String? reporterAvatar;
   final String? reporterPhone;
+  final String? assignedOfficerId;
 
   ReportModel({
     required this.id,
@@ -34,6 +35,7 @@ class ReportModel {
     this.reporterName,
     this.reporterAvatar,
     this.reporterPhone,
+    this.assignedOfficerId,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
@@ -73,6 +75,7 @@ class ReportModel {
       reporterName: json['reporter_name']?.toString() ?? json['users']?['name']?.toString() ?? json['user']?['name']?.toString() ?? json['profiles']?['full_name']?.toString() ?? 'Warga Anonim',
       reporterAvatar: json['users']?['avatar_url']?.toString(),
       reporterPhone: json['users']?['phone']?.toString(),
+      assignedOfficerId: json['assigned_officer_id']?.toString(),
     );
   }
 

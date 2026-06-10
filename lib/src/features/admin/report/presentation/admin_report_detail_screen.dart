@@ -8,6 +8,8 @@ import 'package:latlong2/latlong.dart';
 import '../../../warga/report/data/report_model.dart';
 import '../../../warga/report/data/report_provider.dart';
 import '../../../petugas/dashboard/data/status_repository.dart';
+import '../../petugas/data/officer_provider.dart';
+import '../../petugas/data/officer_model.dart';
 
 class AdminReportDetailScreen extends ConsumerStatefulWidget {
   final ReportModel report;
@@ -22,13 +24,19 @@ class AdminReportDetailScreen extends ConsumerStatefulWidget {
 class _AdminReportDetailScreenState
     extends ConsumerState<AdminReportDetailScreen> {
   String? _selectedStatus;
+  Officer? _selectedOfficer;
   bool _isLoading = false;
   final MapController _mapController = MapController();
 
   @override
   Widget build(BuildContext context) {
     final r = widget.report;
-    final isReceived = r.status.toLowerCase() == 'received';
+    final statusLow = r.status.toLowerCase();
+    final isReceived = statusLow == 'received';
+    final isVerified = statusLow == 'verified';
+    final isAssignedOrLater = ['assigned', 'in_progress', 'resolved'].contains(statusLow);
+
+    final officersAsync = (isVerified || isAssignedOrLater) ? ref.watch(officersProvider) : const AsyncValue<List<Officer>>.loading();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -527,6 +535,143 @@ class _AdminReportDetailScreenState
                   ],
                 ),
               ),
+          
+            // Monitoring Officer
+            if (isAssignedOrLater)
+              _buildMonitoringSection(context, r, officersAsync),
+          
+            // Assign Officer (only if verified)
+            if (isVerified)
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1B4332),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(
+                          Icons.assignment_ind,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Tugaskan Petugas',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    officersAsync.when(
+                      data: (officers) {
+                        final mappedSector = _mapCategoryToSector(r.category);
+                        final availableOfficers = officers.where((o) => 
+                          o.sector == mappedSector && 
+                          (o.officerStatus == 'Aktif' || o.officerStatus == 'Sedang Bertugas')
+                        ).toList();
+
+                        if (availableOfficers.isEmpty) {
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              'Tidak ada petugas yang tersedia untuk sektor ini.',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          );
+                        }
+
+                        // Set default selection if none selected
+                        if (_selectedOfficer == null && availableOfficers.isNotEmpty) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (mounted) setState(() => _selectedOfficer = availableOfficers.first);
+                          });
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Rekomendasi untuk: $mappedSector',
+                              style: const TextStyle(color: Colors.greenAccent, fontSize: 12),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<Officer>(
+                                  value: _selectedOfficer,
+                                  isExpanded: true,
+                                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF1B4332)),
+                                  items: availableOfficers.map((Officer officer) {
+                                    return DropdownMenuItem<Officer>(
+                                      value: officer,
+                                      child: Text(
+                                        '${officer.name} (${officer.officerStatus})',
+                                        style: const TextStyle(color: Color(0xFF1B4332), fontWeight: FontWeight.bold),
+                                      ),
+                                    );
+                                  }).toList(),
+                                  onChanged: (Officer? newValue) {
+                                    setState(() {
+                                      _selectedOfficer = newValue;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: _selectedOfficer == null || _isLoading
+                                    ? null
+                                    : () => _submitAssignOfficer(r.id),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFB57022),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  disabledBackgroundColor: Colors.grey[600],
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                      )
+                                    : const Text(
+                                        'Tugaskan Sekarang',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => const CircularProgressIndicator(color: Colors.white),
+                      error: (err, stack) => Text('Error: $err', style: const TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -651,6 +796,100 @@ class _AdminReportDetailScreenState
     }
   }
 
+  Widget _buildMonitoringSection(BuildContext context, ReportModel r, AsyncValue<List<Officer>> officersAsync) {
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue[100]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.radar, color: Colors.blue[800], size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Pantau Penugasan',
+                style: TextStyle(
+                  color: Colors.blue[800],
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          officersAsync.when(
+            data: (officers) {
+              final assignedOfficer = officers.cast<Officer?>().firstWhere(
+                (o) => o?.id == r.assignedOfficerId, 
+                orElse: () => null
+              );
+
+              if (assignedOfficer == null) {
+                return Text('Sedang ditangani oleh petugas (ID: ${r.assignedOfficerId ?? "Tidak diketahui"})', style: TextStyle(color: Colors.grey[700]));
+              }
+
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundImage: assignedOfficer.avatarUrl != null ? NetworkImage(assignedOfficer.avatarUrl!) : null,
+                      backgroundColor: Colors.blue[100],
+                      child: assignedOfficer.avatarUrl == null ? Icon(Icons.person, color: Colors.blue[800]) : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            assignedOfficer.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          Text(
+                            assignedOfficer.sector ?? 'Petugas Lapangan',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: r.status.toLowerCase() == 'resolved' ? Colors.green[100] : Colors.blue[100],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        r.status.toLowerCase() == 'resolved' ? 'Selesai' : 'Diproses',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: r.status.toLowerCase() == 'resolved' ? Colors.green[800] : Colors.blue[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, s) => Text('Error: $e'),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatCategory(String category) {
     if (category.isEmpty) return category;
     return category
@@ -660,5 +899,50 @@ class _AdminReportDetailScreenState
           return word[0].toUpperCase() + word.substring(1).toLowerCase();
         })
         .join(' ');
+  }
+
+  String _mapCategoryToSector(String category) {
+    final c = category.toLowerCase();
+    if (c.contains('sampah') || c.contains('limbah') || c.contains('penumpukan')) return 'Sektor Limbah';
+    if (c.contains('pohon') || c.contains('hutan')) return 'Sektor Pohon';
+    if (c.contains('sungai') || c.contains('banjir') || c.contains('air')) return 'Sektor Banjir';
+    if (c.contains('polusi') || c.contains('udara') || c.contains('kualitas')) return 'Sektor Polusi';
+    return 'Sektor Limbah'; // Default fallback
+  }
+
+  Future<void> _submitAssignOfficer(String reportId) async {
+    if (_selectedOfficer == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final repo = ref.read(statusRepositoryProvider);
+      await repo.updateStatus(
+        reportId: reportId,
+        status: 'assigned',
+        assignedOfficerId: _selectedOfficer!.id,
+      );
+
+      // Refresh list
+      ref.invalidate(reportsProvider('all'));
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Berhasil menugaskan ${_selectedOfficer!.name}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menugaskan: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 }
