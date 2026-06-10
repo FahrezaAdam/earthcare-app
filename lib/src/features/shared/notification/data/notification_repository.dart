@@ -32,6 +32,16 @@ class NotificationRepository {
       throw Exception(e.response?.data['message'] ?? 'Gagal menandai notifikasi');
     }
   }
+
+  Future<bool> markAllAsRead() async {
+    try {
+      final response = await _apiClient.dio.patch('/api/status/notifications/read-all');
+      
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal menandai semua notifikasi');
+    }
+  }
 }
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {

@@ -91,6 +91,19 @@ class ReportRepository {
       throw Exception(e.response?.data['message'] ?? 'Gagal membatalkan laporan: ${e.message}');
     }
   }
+
+  Future<ReportModel> getReportById(String id) async {
+    try {
+      final response = await _apiClient.dio.get('/api/reports/$id');
+      if (response.statusCode == 200) {
+        return ReportModel.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Gagal memuat detail laporan');
+      }
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Gagal memuat laporan dari server');
+    }
+  }
 }
 
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {

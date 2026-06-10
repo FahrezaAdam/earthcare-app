@@ -250,9 +250,9 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 8),
             ],
-            const SizedBox(height: 48),
+            const SizedBox(height: 24),
 
             // Menus
             Container(

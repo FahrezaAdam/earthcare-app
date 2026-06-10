@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../data/notification_provider.dart';
 import '../data/notification_repository.dart';
 import '../data/notification_model.dart';
+import '../../auth/data/auth_provider.dart';
+import '../../../warga/report/data/report_repository.dart';
 
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({super.key});
@@ -66,6 +68,29 @@ class NotificationScreen extends ConsumerWidget {
           'Notifikasi',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
         ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              try {
+                await ref.read(notificationRepositoryProvider).markAllAsRead();
+                ref.invalidate(notificationsProvider);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menandai semua dibaca: $e')));
+                }
+              }
+            },
+            child: Text(
+              'Tandai Dibaca Semua',
+              style: TextStyle(
+                color: Color(0xFF1B4332),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: notificationsAsync.when(
         data: (notifications) {
@@ -133,11 +158,52 @@ class NotificationScreen extends ConsumerWidget {
             }
           }
         }
+        
+        // Navigasi ke detail laporan jika reportId ada
+        if (notif.reportId != null && notif.reportId!.isNotEmpty) {
+          final role = ref.read(authProvider).role;
+          if (role != null) {
+            try {
+              // Tampilkan indikator loading (opsional, tapi disarankan)
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                );
+              }
+
+              final reportRepo = ref.read(reportRepositoryProvider);
+              final report = await reportRepo.getReportById(notif.reportId!);
+              
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Tutup loading dialog
+                
+                if (role == 'warga' || role == 'citizen') {
+                  context.push('/track-detail', extra: {
+                    'report': report,
+                    'title': report.title,
+                    'ticketId': report.id,
+                  });
+                } else if (role == 'admin') {
+                  context.push('/admin/report-detail', extra: report);
+                } else if (role == 'petugas' || role == 'officer') {
+                  context.push('/petugas/report-detail', extra: report);
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                Navigator.of(context).pop(); // Tutup loading dialog jika error
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memuat detail laporan: $e')));
+              }
+            }
+          }
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: notif.isRead ? Colors.white : const Color(0xFFF0FDF4), // Colors.green[50]
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(

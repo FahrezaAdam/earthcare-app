@@ -269,28 +269,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   ),
                 ),
 
-                // Search Bar (Petugas Only)
+                // Notification Button (Petugas Only)
                 if (userRole != 'warga')
                   Positioned(
                     top: MediaQuery.of(context).padding.top + 16,
-                    left: 16,
                     right: 16,
                     child: Container(
-                      height: 50,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 8)],
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
                       ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Cari masalah lingkungan...',
-                          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 20),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                        ),
-                      ),
+                      child: const NotificationBellButton(),
                     ),
                   ),
 

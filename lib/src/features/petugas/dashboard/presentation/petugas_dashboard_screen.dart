@@ -58,7 +58,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
             indicatorColor: Color(0xFF1B4332),
             indicatorWeight: 3,
             tabs: [
-              Tab(text: 'Baru'),
+              Tab(text: 'Semua'),
               Tab(text: 'Sedang Berjalan'),
               Tab(text: 'Selesai'),
             ],
@@ -67,23 +67,6 @@ class PetugasDashboardScreen extends ConsumerWidget {
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Antrean Tugas',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pantau dan terima laporan lingkungan terbaru dari masyarakat.',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                ],
-              ),
-            ),
             Expanded(
               child: reportsAsyncValue.when(
                 data: (reports) {
@@ -96,7 +79,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
 
                   return TabBarView(
                     children: [
-                      _buildReportList(context, baruReports, 'Baru'),
+                      _buildReportList(context, myReports, 'Semua'),
                       _buildReportList(context, berjalanReports, 'Sedang Berjalan'),
                       _buildReportList(context, selesaiReports, 'Selesai'),
                     ],
@@ -134,7 +117,8 @@ class PetugasDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildTaskCard(BuildContext context, ReportModel report, String tabType) {
-    final isSelesai = tabType == 'Selesai';
+    final isSelesai = report.status.toLowerCase() == 'resolved';
+    final isBaru = report.status.toLowerCase() == 'assigned';
     
     return Container(
       decoration: BoxDecoration(
@@ -168,18 +152,6 @@ class PetugasDashboardScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                if (!isSelesai)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red[50],
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      'MENCEKAM', // Dummy priority badge based on UI
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.red[800]),
-                    ),
-                  ),
               ],
             ),
           ),
@@ -257,7 +229,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
                     elevation: 0,
                   ),
                   child: Text(
-                    isSelesai ? 'Detail Tugas' : (tabType == 'Baru' ? 'Terima Tugas ->' : 'Update Tugas ->'),
+                    isSelesai ? 'Detail Tugas' : (isBaru ? 'Terima Tugas ->' : 'Update Tugas ->'),
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                   ),
                 ),
