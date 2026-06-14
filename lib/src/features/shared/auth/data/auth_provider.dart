@@ -70,6 +70,14 @@ class AuthNotifier extends Notifier<AuthState> {
         final repository = ref.read(authRepositoryProvider);
         final user = await repository.getProfile();
         state = state.copyWith(user: user);
+
+        // Update FCM Token
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            await repository.updateProfile(fcmToken: fcmToken);
+          }
+        } catch (_) {}
       } catch (e) {
         // Token might be expired, ignore for now or logout
       }

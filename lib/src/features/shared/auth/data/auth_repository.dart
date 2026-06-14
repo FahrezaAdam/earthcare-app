@@ -193,14 +193,15 @@ class AuthRepository {
     String? fcmToken,
   }) async {
     try {
+      final data = <String, dynamic>{};
+      if (name != null) data['name'] = name;
+      if (phone != null) data['phone'] = phone;
+      if (avatarUrl != null) data['avatar_url'] = avatarUrl;
+      if (fcmToken != null) data['fcm_token'] = fcmToken;
+
       final response = await _apiClient.dio.put(
         '/api/auth/profile',
-        data: {
-          'name': ?name,
-          'phone': ?phone,
-          'avatar_url': ?avatarUrl,
-          'fcm_token': ?fcmToken,
-        },
+        data: data,
       );
       if (response.statusCode == 200) {
         return response.data['data'];
