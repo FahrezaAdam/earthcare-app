@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:dio/dio.dart';
@@ -8,16 +9,25 @@ class ReportRepository {
 
   ReportRepository(this._apiClient);
 
-  Future<List<ReportModel>> getReports({int page = 1, int limit = 10, String? category, String? status, String filter = 'all'}) async {
+  Future<List<ReportModel>> getReports({
+    int page = 1,
+    int limit = 10,
+    String? category,
+    String? status,
+    String filter = 'all',
+  }) async {
     try {
       final queryParams = {
-        if (category != null) 'category': category,
-        if (status != null) 'status': status,
+        'category': ?category,
+        'status': ?status,
       };
-      
+
       final endpoint = filter == 'me' ? '/api/reports/me' : '/api/reports';
-      final response = await _apiClient.dio.get(endpoint, queryParameters: queryParams.isNotEmpty ? queryParams : null);
-      
+      final response = await _apiClient.dio.get(
+        endpoint,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
       if (response.statusCode == 200) {
         List<dynamic> data = [];
         if (response.data is List) {
@@ -30,7 +40,7 @@ class ReportRepository {
         throw Exception(response.data['message'] ?? 'Gagal memuat laporan');
       }
     } catch (e) {
-      print('DEBUG GET REPORTS ERROR: $e');
+      debugPrint('DEBUG GET REPORTS ERROR: $e');
       throw Exception('Gagal memuat laporan: $e');
     }
   }
@@ -57,12 +67,14 @@ class ReportRepository {
           'photo_url': photoUrl,
         },
       );
-      
+
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
-      print('DEBUG CREATE REPORT ERROR: $e');
+      debugPrint('DEBUG CREATE REPORT ERROR: $e');
       if (e is DioException) {
-        throw Exception(e.response?.data['message'] ?? 'Gagal membuat laporan: ${e.message}');
+        throw Exception(
+          e.response?.data['message'] ?? 'Gagal membuat laporan: ${e.message}',
+        );
       }
       throw Exception('Gagal membuat laporan: $e');
     }
@@ -71,15 +83,20 @@ class ReportRepository {
   Future<List<HeatmapData>> getHeatmapData() async {
     try {
       final response = await _apiClient.dio.get('/api/reports/heatmap');
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'] ?? [];
         return data.map((json) => HeatmapData.fromJson(json)).toList();
       } else {
-        throw Exception(response.data['message'] ?? 'Gagal memuat data heatmap');
+        throw Exception(
+          response.data['message'] ?? 'Gagal memuat data heatmap',
+        );
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal memuat data heatmap: ${e.message}');
+      throw Exception(
+        e.response?.data['message'] ??
+            'Gagal memuat data heatmap: ${e.message}',
+      );
     }
   }
 
@@ -88,7 +105,10 @@ class ReportRepository {
       final response = await _apiClient.dio.delete('/api/reports/$reportId');
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal membatalkan laporan: ${e.message}');
+      throw Exception(
+        e.response?.data['message'] ??
+            'Gagal membatalkan laporan: ${e.message}',
+      );
     }
   }
 
@@ -98,10 +118,14 @@ class ReportRepository {
       if (response.statusCode == 200) {
         return ReportModel.fromJson(response.data['data']);
       } else {
-        throw Exception(response.data['message'] ?? 'Gagal memuat detail laporan');
+        throw Exception(
+          response.data['message'] ?? 'Gagal memuat detail laporan',
+        );
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal memuat laporan dari server');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal memuat laporan dari server',
+      );
     }
   }
 }

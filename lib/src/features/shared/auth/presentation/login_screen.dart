@@ -95,10 +95,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Column(
@@ -240,7 +240,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.zero,
                                     minimumSize: const Size(0, 0),
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
                                   ),
                                   child: const Text(
                                     'Lupa Kata Sandi?',
@@ -263,7 +264,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 return ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFF0C3B2E),
-                                    minimumSize: const Size(double.infinity, 56),
+                                    minimumSize: const Size(
+                                      double.infinity,
+                                      56,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -271,28 +275,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   onPressed: authState.isLoading
                                       ? null
                                       : () async {
-                                          final email = _emailController.text.trim();
-                                          final password = _passwordController.text;
+                                          final email = _emailController.text
+                                              .trim();
+                                          final password =
+                                              _passwordController.text;
 
-                                          if (email.isEmpty || password.isEmpty) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                          if (email.isEmpty ||
+                                              password.isEmpty) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               SnackBar(
                                                 content: Row(
                                                   children: const [
-                                                    Icon(Icons.error_outline, color: Colors.white),
+                                                    Icon(
+                                                      Icons.error_outline,
+                                                      color: Colors.white,
+                                                    ),
                                                     SizedBox(width: 12),
                                                     Expanded(
                                                       child: Text(
                                                         'Email dan kata sandi harus diisi',
-                                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                backgroundColor: Colors.redAccent.shade700,
-                                                behavior: SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                margin: const EdgeInsets.all(16),
+                                                backgroundColor:
+                                                    Colors.redAccent.shade700,
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                margin: const EdgeInsets.all(
+                                                  16,
+                                                ),
                                                 elevation: 4,
                                               ),
                                             );
@@ -302,47 +324,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           final success = await ref
                                               .read(authProvider.notifier)
                                               .login(email, password);
-                                          
+
                                           if (!context.mounted) return;
-                                          
+
                                           if (success) {
-                                            final role = ref.read(authProvider).role;
+                                            final role = ref
+                                                .read(authProvider)
+                                                .role;
                                             if (role == 'admin') {
                                               context.go('/admin/dashboard');
-                                            } else if (role == 'petugas' || role == 'officer') {
+                                            } else if (role == 'petugas' ||
+                                                role == 'officer') {
                                               context.go('/petugas/main');
                                             } else {
                                               context.go('/dashboard'); // Warga
                                             }
                                           } else {
-                                            final error = ref.read(authProvider).error;
-                                            ScaffoldMessenger.of(context).showSnackBar(
+                                            final error = ref
+                                                .read(authProvider)
+                                                .error;
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               SnackBar(
                                                 content: Row(
                                                   children: [
-                                                    const Icon(Icons.error_outline, color: Colors.white),
+                                                    const Icon(
+                                                      Icons.error_outline,
+                                                      color: Colors.white,
+                                                    ),
                                                     const SizedBox(width: 12),
                                                     Expanded(
                                                       child: Text(
                                                         error ?? 'Login gagal',
-                                                        style: const TextStyle(fontWeight: FontWeight.bold),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
                                                 ),
-                                                backgroundColor: Colors.redAccent.shade700,
-                                                behavior: SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                                margin: const EdgeInsets.all(16),
+                                                backgroundColor:
+                                                    Colors.redAccent.shade700,
+                                                behavior:
+                                                    SnackBarBehavior.floating,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                margin: const EdgeInsets.all(
+                                                  16,
+                                                ),
                                                 elevation: 4,
                                               ),
                                             );
                                           }
                                         },
                                   child: authState.isLoading
-                                      ? const CircularProgressIndicator(color: Colors.white)
+                                      ? const CircularProgressIndicator(
+                                          color: Colors.white,
+                                        )
                                       : const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
                                               'Masuk',

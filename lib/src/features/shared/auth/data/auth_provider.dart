@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_repository.dart';
@@ -54,7 +55,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     final role = prefs.getString('user_role');
     final token = prefs.getString('auth_token');
-    
+
     if (token != null && role != null) {
       state = state.copyWith(role: role);
       try {
@@ -74,12 +75,13 @@ class AuthNotifier extends Notifier<AuthState> {
       final data = await repository.login(email, password);
 
       final token = data['data']?['token'] ?? data['token'] as String?;
-      final user = data['data']?['user'] ?? data['user'] as Map<String, dynamic>?;
-      
+      final user =
+          data['data']?['user'] ?? data['user'] as Map<String, dynamic>?;
+
       // Debug print to see exact API response in console
-      print('=== LOGIN RESPONSE ===');
-      print('Data: $data');
-      print('======================');
+      debugPrint('=== LOGIN RESPONSE ===');
+      debugPrint('Data: $data');
+      debugPrint('======================');
 
       final rawRole = user?['role']?.toString().toLowerCase();
       final role = rawRole ?? 'warga';
@@ -108,7 +110,12 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> sendOtp(String name, String email, String password, String phone) async {
+  Future<bool> sendOtp(
+    String name,
+    String email,
+    String password,
+    String phone,
+  ) async {
     state = state.copyWith(
       isLoading: true,
       clearError: true,
@@ -131,7 +138,9 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<bool> verifyCode(String code) async {
     if (state.registrationEmail == null) {
-      state = state.copyWith(error: 'Email tidak ditemukan. Silakan ulangi pendaftaran.');
+      state = state.copyWith(
+        error: 'Email tidak ditemukan. Silakan ulangi pendaftaran.',
+      );
       return false;
     }
 
@@ -139,9 +148,10 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final repository = ref.read(authRepositoryProvider);
       final data = await repository.verifyCode(state.registrationEmail!, code);
-      
+
       final token = data['data']?['token'] ?? data['token'] as String?;
-      final user = data['data']?['user'] ?? data['user'] as Map<String, dynamic>?;
+      final user =
+          data['data']?['user'] ?? data['user'] as Map<String, dynamic>?;
 
       if (token != null) {
         final rawRole = user?['role']?.toString().toLowerCase();
@@ -151,7 +161,12 @@ class AuthNotifier extends Notifier<AuthState> {
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', role);
 
-        state = state.copyWith(isLoading: false, role: role, registrationEmail: null, user: user);
+        state = state.copyWith(
+          isLoading: false,
+          role: role,
+          registrationEmail: null,
+          user: user,
+        );
         return true;
       } else {
         state = state.copyWith(
@@ -190,7 +205,11 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> forgotPassword(String email) async {
-    state = state.copyWith(isLoading: true, clearError: true, resetEmail: email);
+    state = state.copyWith(
+      isLoading: true,
+      clearError: true,
+      resetEmail: email,
+    );
     try {
       final repository = ref.read(authRepositoryProvider);
       final success = await repository.forgotPassword(email);
@@ -198,7 +217,9 @@ class AuthNotifier extends Notifier<AuthState> {
       return success;
     } catch (e) {
       String errorMessage = e.toString();
-      if (errorMessage.startsWith('Exception: ')) errorMessage = errorMessage.substring(11);
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
       state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
@@ -212,7 +233,10 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(authRepositoryProvider);
-      final token = await repository.verifyForgotPassword(state.resetEmail!, code);
+      final token = await repository.verifyForgotPassword(
+        state.resetEmail!,
+        code,
+      );
       if (token != null) {
         state = state.copyWith(isLoading: false, resetOtp: token);
         return true;
@@ -223,7 +247,9 @@ class AuthNotifier extends Notifier<AuthState> {
       }
     } catch (e) {
       String errorMessage = e.toString();
-      if (errorMessage.startsWith('Exception: ')) errorMessage = errorMessage.substring(11);
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
       state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
@@ -237,14 +263,24 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(authRepositoryProvider);
-      final success = await repository.resetPassword(state.resetEmail!, state.resetOtp!, newPassword);
+      final success = await repository.resetPassword(
+        state.resetEmail!,
+        state.resetOtp!,
+        newPassword,
+      );
       if (success) {
-        state = state.copyWith(isLoading: false, resetEmail: null, resetOtp: null);
+        state = state.copyWith(
+          isLoading: false,
+          resetEmail: null,
+          resetOtp: null,
+        );
       }
       return success;
     } catch (e) {
       String errorMessage = e.toString();
-      if (errorMessage.startsWith('Exception: ')) errorMessage = errorMessage.substring(11);
+      if (errorMessage.startsWith('Exception: ')) {
+        errorMessage = errorMessage.substring(11);
+      }
       state = state.copyWith(isLoading: false, error: errorMessage);
       return false;
     }
@@ -252,15 +288,14 @@ class AuthNotifier extends Notifier<AuthState> {
 
   void updateProfileData({String? name, String? phone, String? avatarUrl}) {
     if (state.user == null) return;
-    
+
     final updatedUser = Map<String, dynamic>.from(state.user!);
     if (name != null) updatedUser['name'] = name;
     if (phone != null) updatedUser['phone'] = phone;
     if (avatarUrl != null) updatedUser['avatar_url'] = avatarUrl;
-    
+
     state = state.copyWith(user: updatedUser);
   }
-
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();

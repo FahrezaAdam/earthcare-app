@@ -26,7 +26,12 @@ class AuthRepository {
   }
 
   // Register User (Send OTP)
-  Future<bool> sendOtp(String name, String email, String password, String phone) async {
+  Future<bool> sendOtp(
+    String name,
+    String email,
+    String password,
+    String phone,
+  ) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/auth/register',
@@ -181,14 +186,18 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> updateProfile({String? name, String? phone, String? avatarUrl}) async {
+  Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? phone,
+    String? avatarUrl,
+  }) async {
     try {
       final response = await _apiClient.dio.put(
         '/api/auth/profile',
         data: {
-          if (name != null) 'name': name,
-          if (phone != null) 'phone': phone,
-          if (avatarUrl != null) 'avatar_url': avatarUrl,
+          'name': ?name,
+          'phone': ?phone,
+          'avatar_url': ?avatarUrl,
         },
       );
       if (response.statusCode == 200) {
@@ -203,14 +212,14 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> getSignedUploadUrl(String filename, String contentType) async {
+  Future<Map<String, dynamic>> getSignedUploadUrl(
+    String filename,
+    String contentType,
+  ) async {
     try {
       final response = await _apiClient.dio.post(
         '/api/upload/signed-url',
-        data: {
-          'filename': filename,
-          'content_type': contentType,
-        },
+        data: {'filename': filename, 'content_type': contentType},
       );
       if (response.statusCode == 200) {
         return response.data['data'];

@@ -1,6 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
-import 'package:dio/dio.dart';
 import 'comment_model.dart';
 
 class CommentRepository {
@@ -11,7 +9,7 @@ class CommentRepository {
   Future<List<CommentModel>> getComments(String reportId) async {
     try {
       final response = await _apiClient.dio.get('/api/comments/$reportId');
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'] ?? [];
         return data.map((json) => CommentModel.fromJson(json)).toList();
@@ -27,16 +25,15 @@ class CommentRepository {
     try {
       final response = await _apiClient.dio.post(
         '/api/comments',
-        data: {
-          'report_id': reportId,
-          'content': content,
-        },
+        data: {'report_id': reportId, 'content': content},
       );
-      
+
       if (response.statusCode == 201) {
         return CommentModel.fromJson(response.data['data']);
       } else {
-        throw Exception(response.data['message'] ?? 'Gagal menambahkan komentar');
+        throw Exception(
+          response.data['message'] ?? 'Gagal menambahkan komentar',
+        );
       }
     } catch (e) {
       throw Exception('Gagal menambahkan komentar: $e');

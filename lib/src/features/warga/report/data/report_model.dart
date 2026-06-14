@@ -46,9 +46,10 @@ class ReportModel {
     // Map status from API to isCompleted
     final apiStatus = json['status']?.toString().toLowerCase() ?? 'received';
     final completed = apiStatus == 'resolved';
-    
+
     int count = 0;
-    if (json['report_comments'] is List && (json['report_comments'] as List).isNotEmpty) {
+    if (json['report_comments'] is List &&
+        (json['report_comments'] as List).isNotEmpty) {
       count = json['report_comments'][0]['count'] as int? ?? 0;
     } else if (json['commentCount'] != null) {
       count = json['commentCount'] as int;
@@ -63,9 +64,10 @@ class ReportModel {
     } else if (json['assignedOfficerIds'] is List) {
       officerIds = List<String>.from(json['assignedOfficerIds']);
     }
-    
+
     // Add legacy assigned_officer_id if it exists and not in the list
-    if (json['assigned_officer_id'] != null && !officerIds.contains(json['assigned_officer_id'].toString())) {
+    if (json['assigned_officer_id'] != null &&
+        !officerIds.contains(json['assigned_officer_id'].toString())) {
       officerIds.add(json['assigned_officer_id'].toString());
     }
 
@@ -98,7 +100,12 @@ class ReportModel {
           : null,
       userId: json['user_id']?.toString() ?? json['userId']?.toString(),
       description: json['description']?.toString(),
-      reporterName: json['reporter_name']?.toString() ?? json['users']?['name']?.toString() ?? json['user']?['name']?.toString() ?? json['profiles']?['full_name']?.toString() ?? 'Warga Anonim',
+      reporterName:
+          json['reporter_name']?.toString() ??
+          json['users']?['name']?.toString() ??
+          json['user']?['name']?.toString() ??
+          json['profiles']?['full_name']?.toString() ??
+          'Warga Anonim',
       reporterAvatar: json['users']?['avatar_url']?.toString(),
       reporterPhone: json['users']?['phone']?.toString(),
       assignedOfficerId: json['assigned_officer_id']?.toString(),

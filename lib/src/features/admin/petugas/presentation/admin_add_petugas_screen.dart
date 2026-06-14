@@ -10,12 +10,13 @@ class AdminAddPetugasScreen extends ConsumerStatefulWidget {
   const AdminAddPetugasScreen({super.key, this.officer});
 
   @override
-  ConsumerState<AdminAddPetugasScreen> createState() => _AdminAddPetugasScreenState();
+  ConsumerState<AdminAddPetugasScreen> createState() =>
+      _AdminAddPetugasScreenState();
 }
 
 class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   late TextEditingController _nameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
@@ -54,7 +55,13 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedSector == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Silakan pilih sektor pengawasan', style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text(
+            'Silakan pilih sektor pengawasan',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -63,13 +70,14 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
 
     try {
       final repository = ref.read(officerRepositoryProvider);
-      
+
       final data = {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'sector': _selectedSector,
-        if (_passwordController.text.isNotEmpty) 'password': _passwordController.text,
+        if (_passwordController.text.isNotEmpty)
+          'password': _passwordController.text,
       };
 
       if (widget.officer == null) {
@@ -78,21 +86,30 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
           throw Exception('Password wajib diisi untuk petugas baru');
         }
         await repository.createOfficer(data);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Petugas berhasil ditambahkan'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Petugas berhasil ditambahkan'),
+            backgroundColor: Colors.green,
+          ),
         );
       } else {
         // Update existing
         await repository.updateOfficer(widget.officer!.id, data);
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data petugas berhasil diperbarui'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Data petugas berhasil diperbarui'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
-      
+
       // Refresh list
       ref.invalidate(officersProvider);
       if (mounted) context.pop();
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
@@ -153,10 +170,16 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
                         CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.grey[100],
-                          backgroundImage: widget.officer?.avatarUrl != null ? NetworkImage(widget.officer!.avatarUrl!) : null,
-                          child: widget.officer?.avatarUrl == null 
-                            ? const Icon(Icons.person_outline, size: 40, color: Colors.grey)
-                            : null,
+                          backgroundImage: widget.officer?.avatarUrl != null
+                              ? NetworkImage(widget.officer!.avatarUrl!)
+                              : null,
+                          child: widget.officer?.avatarUrl == null
+                              ? const Icon(
+                                  Icons.person_outline,
+                                  size: 40,
+                                  color: Colors.grey,
+                                )
+                              : null,
                         ),
                         Positioned(
                           bottom: 0,
@@ -167,7 +190,11 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
                               color: Color(0xFF0D2818),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 14),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              color: Colors.white,
+                              size: 14,
+                            ),
                           ),
                         ),
                       ],
@@ -183,22 +210,42 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
               const SizedBox(height: 24),
 
               // Form Fields
-              _buildTextField('Nama Lengkap', _nameController, 'Masukkan nama lengkap petugas'),
-              const SizedBox(height: 16),
-              _buildTextField('Email', _emailController, 'contoh@earthcare.com', keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 16),
-              _buildTextField('Nomor Telepon', _phoneController, '+628...', keyboardType: TextInputType.phone),
+              _buildTextField(
+                'Nama Lengkap',
+                _nameController,
+                'Masukkan nama lengkap petugas',
+              ),
               const SizedBox(height: 16),
               _buildTextField(
-                'Password', 
-                _passwordController, 
+                'Email',
+                _emailController,
+                'contoh@earthcare.com',
+                keyboardType: TextInputType.emailAddress,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                'Nomor Telepon',
+                _phoneController,
+                '+628...',
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                'Password',
+                _passwordController,
                 isEdit ? 'Biarkan kosong jika tidak diubah' : '******',
                 obscureText: true,
-                validator: isEdit ? null : (val) {
-                  if (val == null || val.isEmpty) return 'Password wajib diisi';
-                  if (val.length < 6) return 'Password minimal 6 karakter';
-                  return null;
-                },
+                validator: isEdit
+                    ? null
+                    : (val) {
+                        if (val == null || val.isEmpty) {
+                          return 'Password wajib diisi';
+                        }
+                        if (val.length < 6) {
+                          return 'Password minimal 6 karakter';
+                        }
+                        return null;
+                      },
               ),
               const SizedBox(height: 24),
 
@@ -218,7 +265,10 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
                         SizedBox(width: 8),
                         Text(
                           'Penugasan Lapangan',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -237,17 +287,27 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
                           label: Text(sector),
                           selected: isSelected,
                           onSelected: (selected) {
-                            if (selected) setState(() => _selectedSector = sector);
+                            if (selected) {
+                              setState(() => _selectedSector = sector);
+                            }
                           },
                           backgroundColor: Colors.white,
                           selectedColor: Colors.green[100],
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.green[800] : Colors.black87,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.green[800]
+                                : Colors.black87,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(color: isSelected ? Colors.green[300]! : Colors.grey[300]!),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? Colors.green[300]!
+                                  : Colors.grey[300]!,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -269,16 +329,23 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
                       borderRadius: BorderRadius.circular(28),
                     ),
                   ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.save, color: Colors.white),
-                          SizedBox(width: 8),
-                          Text('Simpan Petugas', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                        ],
-                      ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.save, color: Colors.white),
+                            SizedBox(width: 8),
+                            Text(
+                              'Simpan Petugas',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ],
@@ -289,8 +356,8 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
   }
 
   Widget _buildTextField(
-    String label, 
-    TextEditingController controller, 
+    String label,
+    TextEditingController controller,
     String hint, {
     TextInputType? keyboardType,
     bool obscureText = false,
@@ -301,7 +368,11 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+            color: Colors.black87,
+          ),
         ),
         const SizedBox(height: 8),
         TextFormField(
@@ -313,7 +384,10 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
             hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
             filled: true,
             fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey[300]!),
@@ -323,12 +397,14 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
           ),
-          validator: validator ?? (val) {
-            if (label != 'Password' && (val == null || val.isEmpty)) {
-              return '$label wajib diisi';
-            }
-            return null;
-          },
+          validator:
+              validator ??
+              (val) {
+                if (label != 'Password' && (val == null || val.isEmpty)) {
+                  return '$label wajib diisi';
+                }
+                return null;
+              },
         ),
       ],
     );

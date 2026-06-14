@@ -23,25 +23,35 @@ class OfficerRepository {
 
   Future<Officer> createOfficer(Map<String, dynamic> data) async {
     try {
-      final response = await _apiClient.dio.post('/api/auth/officers', data: data);
+      final response = await _apiClient.dio.post(
+        '/api/auth/officers',
+        data: data,
+      );
       if (response.statusCode == 201) {
         return Officer.fromJson(response.data['data']);
       }
       throw Exception('Gagal menambahkan petugas');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menambahkan petugas');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal menambahkan petugas',
+      );
     }
   }
 
   Future<Officer> updateOfficer(String id, Map<String, dynamic> data) async {
     try {
-      final response = await _apiClient.dio.put('/api/auth/officers/$id', data: data);
+      final response = await _apiClient.dio.put(
+        '/api/auth/officers/$id',
+        data: data,
+      );
       if (response.statusCode == 200) {
         return Officer.fromJson(response.data['data']);
       }
       throw Exception('Gagal mengupdate petugas');
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal mengupdate petugas');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal mengupdate petugas',
+      );
     }
   }
 }

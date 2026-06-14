@@ -98,16 +98,17 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
             bool matchesStatus = true;
             if (_selectedStatus != 'Status') {
               final s = _selectedStatus.toLowerCase();
-              if (s == 'diterima')
+              if (s == 'diterima') {
                 matchesStatus = report.status == 'received';
-              else if (s == 'diverifikasi')
+              } else if (s == 'diverifikasi') {
                 matchesStatus = report.status == 'verified';
-              else if (s == 'ditugaskan')
+              } else if (s == 'ditugaskan') {
                 matchesStatus = report.status == 'assigned';
-              else if (s == 'diproses')
+              } else if (s == 'diproses') {
                 matchesStatus = report.status == 'in_progress';
-              else if (s == 'selesai')
+              } else if (s == 'selesai') {
                 matchesStatus = report.status == 'resolved';
+              }
             }
 
             // Category Filter
@@ -266,8 +267,9 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
                               value: _selectedUrgency,
                               items: ['Urgensi', 'Aktif', 'Kritis', 'Teratasi'],
                               onChanged: (val) {
-                                if (val != null)
+                                if (val != null) {
                                   setState(() => _selectedUrgency = val);
+                                }
                               },
                             ),
                           ),
@@ -284,8 +286,9 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
                                 'Selesai',
                               ],
                               onChanged: (val) {
-                                if (val != null)
+                                if (val != null) {
                                   setState(() => _selectedStatus = val);
+                                }
                               },
                             ),
                           ),
@@ -304,8 +307,9 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
                                 'Lainnya',
                               ],
                               onChanged: (val) {
-                                if (val != null)
+                                if (val != null) {
                                   setState(() => _selectedCategory = val);
+                                }
                               },
                             ),
                           ),
@@ -548,16 +552,30 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
                     if (report.commentCount >= 5) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.local_fire_department, color: Colors.red, size: 10),
+                            Icon(
+                              Icons.local_fire_department,
+                              color: Colors.red,
+                              size: 10,
+                            ),
                             SizedBox(width: 2),
-                            Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+                            Text(
+                              'URGENT',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),

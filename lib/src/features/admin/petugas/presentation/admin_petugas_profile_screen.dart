@@ -49,12 +49,19 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                       CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.grey[200],
-                        backgroundImage: officer.avatarUrl != null ? NetworkImage(officer.avatarUrl!) : null,
-                        child: officer.avatarUrl == null 
-                            ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                        backgroundImage: officer.avatarUrl != null
+                            ? NetworkImage(officer.avatarUrl!)
+                            : null,
+                        child: officer.avatarUrl == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.grey,
+                              )
                             : null,
                       ),
-                      if (officer.officerStatus == 'Aktif' || officer.officerStatus == 'Sedang Bertugas')
+                      if (officer.officerStatus == 'Aktif' ||
+                          officer.officerStatus == 'Sedang Bertugas')
                         Positioned(
                           bottom: 0,
                           right: 0,
@@ -70,7 +77,11 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                                 color: Colors.green,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.check, color: Colors.white, size: 12),
+                              child: const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 12,
+                              ),
                             ),
                           ),
                         ),
@@ -87,7 +98,10 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green[100],
                       borderRadius: BorderRadius.circular(12),
@@ -102,24 +116,37 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _buildContactInfo(Icons.location_on_outlined, 'Berdasarkan penugasan'),
+                  _buildContactInfo(
+                    Icons.location_on_outlined,
+                    'Berdasarkan penugasan',
+                  ),
                   const SizedBox(height: 12),
                   _buildContactInfo(Icons.email_outlined, officer.email),
                   const SizedBox(height: 12),
-                  _buildContactInfo(Icons.phone_outlined, officer.phone ?? 'Belum ada nomor'),
+                  _buildContactInfo(
+                    Icons.phone_outlined,
+                    officer.phone ?? 'Belum ada nomor',
+                  ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: () => context.push('/admin/petugas/edit', extra: officer),
+                      onPressed: () =>
+                          context.push('/admin/petugas/edit', extra: officer),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D2818),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
                       ),
-                      child: const Text('Edit Profil', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Edit Profil',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -150,13 +177,18 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange[100],
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          officer.officerStatus == 'Sedang Bertugas' ? 'Sedang Berjalan' : 'Tidak Ada',
+                          officer.officerStatus == 'Sedang Bertugas'
+                              ? 'Sedang Berjalan'
+                              : 'Tidak Ada',
                           style: TextStyle(
                             color: Colors.orange[800],
                             fontWeight: FontWeight.bold,
@@ -179,10 +211,17 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                     const SizedBox(height: 8),
                     const Text(
                       'Melakukan operasi pembersihan limbah yang komprehensif dan pemetaan stabilitas tanah di sepanjang cabang utara sistem Estuari.',
-                      style: TextStyle(color: Colors.black54, fontSize: 14, height: 1.5),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
                     ),
                   ] else ...[
-                    const Text('Petugas ini sedang tidak mengerjakan tugas apapun saat ini.', style: TextStyle(color: Colors.grey)),
+                    const Text(
+                      'Petugas ini sedang tidak mengerjakan tugas apapun saat ini.',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ],
                 ],
               ),
@@ -203,10 +242,7 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                 children: [
                   const Text(
                     'Riwayat Tugas',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   // Mock History Item
@@ -219,7 +255,11 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                           color: Colors.green[100],
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.park, color: Colors.green[800], size: 20),
+                        child: Icon(
+                          Icons.park,
+                          color: Colors.green[800],
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -228,17 +268,29 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                           children: [
                             const Text(
                               'Reforestasi Zona A-2',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               'Selesai • 12 Okt 2023',
-                              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const Text('Proyek 08j', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Proyek 08j',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -258,10 +310,7 @@ class AdminPetugasProfileScreen extends StatelessWidget {
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[700], fontSize: 14),
           ),
         ),
       ],

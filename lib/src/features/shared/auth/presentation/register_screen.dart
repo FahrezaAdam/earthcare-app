@@ -72,10 +72,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.85),
+                          color: Colors.white.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                           ),
                         ),
                         child: Column(
@@ -231,7 +231,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                                           final success = await ref
                                               .read(authProvider.notifier)
-                                              .sendOtp(name, email, password, phone);
+                                              .sendOtp(
+                                                name,
+                                                email,
+                                                password,
+                                                phone,
+                                              );
 
                                           if (!context.mounted) return;
 

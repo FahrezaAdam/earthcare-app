@@ -108,37 +108,39 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: userRole == 'warga' ? AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        leadingWidth: 140,
-        leading: Row(
-          children: [
-            const SizedBox(width: 16),
-            const Icon(Icons.eco, color: Color(0xFF1B4332), size: 20),
-            const SizedBox(width: 4),
-            const Text(
-              'EarthCare',
-              style: TextStyle(
-                color: Color(0xFF1B4332),
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+      appBar: userRole == 'warga'
+          ? AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              centerTitle: true,
+              leadingWidth: 140,
+              leading: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  const Icon(Icons.eco, color: Color(0xFF1B4332), size: 20),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'EarthCare',
+                    style: TextStyle(
+                      color: Color(0xFF1B4332),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        title: const Text(
-          'PETA',
-          style: TextStyle(
-            color: Color(0xFF1B4332),
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            letterSpacing: 2.0,
-          ),
-        ),
-        actions: const [NotificationBellButton(), SizedBox(width: 8)],
-      ) : null,
+              title: const Text(
+                'PETA',
+                style: TextStyle(
+                  color: Color(0xFF1B4332),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              actions: const [NotificationBellButton(), SizedBox(width: 8)],
+            )
+          : null,
       body: Column(
         children: [
           // ===== MAP (takes remaining space) =====
@@ -274,7 +276,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
+                        boxShadow: [
+                          BoxShadow(color: Colors.black12, blurRadius: 8),
+                        ],
                       ),
                       child: const NotificationBellButton(),
                     ),
@@ -282,7 +286,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
                 // Urgensi Legend
                 Positioned(
-                  top: userRole == 'warga' ? 16 : MediaQuery.of(context).padding.top + 80,
+                  top: userRole == 'warga'
+                      ? 16
+                      : MediaQuery.of(context).padding.top + 80,
                   left: 16,
                   child: Container(
                     padding: const EdgeInsets.all(12),
@@ -618,22 +624,33 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.white,
-                                          foregroundColor: const Color(0xFF0C3B2E),
-                                          side: const BorderSide(color: Color(0xFF0C3B2E)),
+                                          foregroundColor: const Color(
+                                            0xFF0C3B2E,
+                                          ),
+                                          side: const BorderSide(
+                                            color: Color(0xFF0C3B2E),
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                         ),
                                         onPressed: () async {
-                                          if (_selectedData?.latitude != null && _selectedData?.longitude != null) {
-                                            final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${_selectedData!.latitude},${_selectedData!.longitude}');
+                                          if (_selectedData?.latitude != null &&
+                                              _selectedData?.longitude !=
+                                                  null) {
+                                            final url = Uri.parse(
+                                              'https://www.google.com/maps/dir/?api=1&destination=${_selectedData!.latitude},${_selectedData!.longitude}',
+                                            );
                                             if (await canLaunchUrl(url)) {
                                               await launchUrl(url);
                                             }
                                           }
                                         },
                                         child: const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(Icons.directions, size: 16),
                                             SizedBox(width: 8),
@@ -655,9 +672,13 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                       height: 56,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF0C3B2E),
+                                          backgroundColor: const Color(
+                                            0xFF0C3B2E,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(12),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
                                           ),
                                         ),
                                         onPressed: () {
@@ -666,17 +687,21 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                               '/track-detail',
                                               extra: {
                                                 'title': _selectedData!.title,
-                                                'ticketId': _selectedData!.ticketId,
+                                                'ticketId':
+                                                    _selectedData!.ticketId,
                                                 'report': _selectedData,
                                               },
                                             );
                                           }
                                         },
                                         child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              _getActionButtonText(_selectedData?.status),
+                                              _getActionButtonText(
+                                                _selectedData?.status,
+                                              ),
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 12,

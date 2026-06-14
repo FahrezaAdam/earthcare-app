@@ -10,7 +10,6 @@ import '../../../warga/report/data/report_provider.dart';
 import '../../../petugas/dashboard/data/status_repository.dart';
 import '../../petugas/data/officer_provider.dart';
 import '../../petugas/data/officer_model.dart';
-import '../../../warga/track/data/comment_provider.dart';
 import '../../../shared/widgets/full_screen_image_viewer.dart';
 import 'package:intl/intl.dart';
 
@@ -27,7 +26,7 @@ class AdminReportDetailScreen extends ConsumerStatefulWidget {
 class _AdminReportDetailScreenState
     extends ConsumerState<AdminReportDetailScreen> {
   String? _selectedStatus;
-  List<Officer> _selectedOfficers = [];
+  final List<Officer> _selectedOfficers = [];
   bool _isLoading = false;
   List<dynamic> _history = [];
   bool _isLoadingHistory = false;
@@ -49,43 +48,6 @@ class _AdminReportDetailScreenState
       debugPrint('Error loading history: $e');
     } finally {
       if (mounted) setState(() => _isLoadingHistory = false);
-    }
-  }
-
-  final TextEditingController _commentController = TextEditingController();
-  bool _isSubmittingComment = false;
-
-  Future<void> _submitComment() async {
-    final text = _commentController.text.trim();
-    if (text.isEmpty) return;
-
-    setState(() => _isSubmittingComment = true);
-    try {
-      final repo = ref.read(commentRepositoryProvider);
-      await repo.addComment(widget.report.id, text);
-      _commentController.clear();
-      ref.invalidate(commentsProvider(widget.report.id));
-      ref.invalidate(reportsProvider('all'));
-      ref.invalidate(reportsProvider('me'));
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Komentar ditambahkan'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal mengirim: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isSubmittingComment = false);
     }
   }
 
@@ -178,8 +140,8 @@ class _AdminReportDetailScreenState
                 Navigator.of(context).push(
                   PageRouteBuilder(
                     opaque: false,
-                    barrierColor: Colors.black.withOpacity(0.9),
-                    pageBuilder: (BuildContext context, _, __) {
+                    barrierColor: Colors.black.withValues(alpha: 0.9),
+                    pageBuilder: (BuildContext context, _, _) {
                       return Scaffold(
                         backgroundColor: Colors.transparent,
                         appBar: AppBar(
@@ -608,8 +570,7 @@ class _AdminReportDetailScreenState
               _buildMonitoringSection(context, r, officersAsync),
 
             // History / Bukti Pengerjaan
-            if (isAssignedOrLater)
-              _buildHistorySection(),
+            if (isAssignedOrLater) _buildHistorySection(),
 
             // Assign Officer (only if verified)
             if (isVerified)
@@ -671,12 +632,13 @@ class _AdminReportDetailScreenState
                         if (_selectedOfficers.isEmpty &&
                             availableOfficers.isNotEmpty) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
-                            if (mounted)
+                            if (mounted) {
                               setState(
                                 () => _selectedOfficers.add(
                                   availableOfficers.first,
                                 ),
                               );
+                            }
                           });
                         }
 
@@ -716,8 +678,8 @@ class _AdminReportDetailScreenState
                                       }
                                     });
                                   },
-                                  selectedColor: Colors.greenAccent.withOpacity(
-                                    0.3,
+                                  selectedColor: Colors.greenAccent.withValues(
+                                    alpha: 0.3,
                                   ),
                                   checkmarkColor: Colors.white,
                                   labelStyle: TextStyle(
@@ -803,8 +765,8 @@ class _AdminReportDetailScreenState
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.white.withOpacity(0.1)
-              : Colors.white.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -1055,7 +1017,9 @@ class _AdminReportDetailScreenState
           const SizedBox(height: 12),
           ..._history.map((h) {
             final isResolved = h['status'] == 'resolved';
-            final date = DateTime.tryParse(h['created_at'].toString())?.toLocal() ?? DateTime.now();
+            final date =
+                DateTime.tryParse(h['created_at'].toString())?.toLocal() ??
+                DateTime.now();
             final timeStr = DateFormat('dd MMM yyyy, HH:mm').format(date);
 
             return Container(
@@ -1079,15 +1043,24 @@ class _AdminReportDetailScreenState
                       const SizedBox(width: 8),
                       Text(
                         isResolved ? 'Tugas Selesai' : 'Update Pengerjaan',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       const Spacer(),
-                      Text(timeStr, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                      Text(
+                        timeStr,
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                      ),
                     ],
                   ),
                   if (h['note'] != null && h['note'].toString().isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    Text(h['note'], style: TextStyle(color: Colors.grey[800], fontSize: 13)),
+                    Text(
+                      h['note'],
+                      style: TextStyle(color: Colors.grey[800], fontSize: 13),
+                    ),
                   ],
                   if (h['photo_url'] != null) ...[
                     const SizedBox(height: 12),
@@ -1096,7 +1069,8 @@ class _AdminReportDetailScreenState
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => FullScreenImageViewer(imageUrl: h['photo_url']),
+                            builder: (_) =>
+                                FullScreenImageViewer(imageUrl: h['photo_url']),
                           ),
                         );
                       },
@@ -1114,7 +1088,7 @@ class _AdminReportDetailScreenState
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1135,13 +1109,16 @@ class _AdminReportDetailScreenState
     final c = category.toLowerCase();
     if (c.contains('sampah') ||
         c.contains('limbah') ||
-        c.contains('penumpukan'))
+        c.contains('penumpukan')) {
       return 'Sektor Limbah';
+    }
     if (c.contains('pohon') || c.contains('hutan')) return 'Sektor Pohon';
-    if (c.contains('sungai') || c.contains('banjir') || c.contains('air'))
+    if (c.contains('sungai') || c.contains('banjir') || c.contains('air')) {
       return 'Sektor Banjir';
-    if (c.contains('polusi') || c.contains('udara') || c.contains('kualitas'))
+    }
+    if (c.contains('polusi') || c.contains('udara') || c.contains('kualitas')) {
       return 'Sektor Polusi';
+    }
     return 'Sektor Limbah'; // Default fallback
   }
 

@@ -22,7 +22,7 @@ class CreateReportScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateReportScreenState extends ConsumerState<CreateReportScreen> {
-  List<String> _imagePaths = [];
+  final List<String> _imagePaths = [];
   String _selectedCategoryId = 'sampah_liar';
   LatLng _selectedLocation = const LatLng(
     -6.1830,

@@ -9,7 +9,7 @@ class NotificationBellButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifsAsync = ref.watch(notificationsProvider);
-    
+
     return notifsAsync.when(
       data: (notifs) {
         final unreadCount = notifs.where((n) => !n.isRead).length;
@@ -17,7 +17,10 @@ class NotificationBellButton extends ConsumerWidget {
           alignment: Alignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
+              icon: const Icon(
+                Icons.notifications_outlined,
+                color: Colors.black87,
+              ),
               onPressed: () => context.push('/notifications'),
             ),
             if (unreadCount > 0)
@@ -41,7 +44,7 @@ class NotificationBellButton extends ConsumerWidget {
         icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
         onPressed: () => context.push('/notifications'),
       ),
-      error: (_, __) => IconButton(
+      error: (_, _) => IconButton(
         icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
         onPressed: () => context.push('/notifications'),
       ),

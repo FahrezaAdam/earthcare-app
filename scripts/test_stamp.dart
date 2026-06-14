@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 
 void main() async {
@@ -20,8 +20,8 @@ void main() async {
       y: 160,
       color: img.ColorRgb8(255, 255, 255),
     );
-    print('Success Image Stamping');
+    debugPrint('Success Image Stamping');
   } catch (e) {
-    print('Error: $e');
+    debugPrint('Error: $e');
   }
 }

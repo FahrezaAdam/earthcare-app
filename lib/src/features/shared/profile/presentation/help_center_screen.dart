@@ -17,7 +17,11 @@ class HelpCenterScreen extends StatelessWidget {
         ),
         title: const Text(
           'Pusat Bantuan',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
         ),
       ),
       body: SingleChildScrollView(
@@ -48,7 +52,8 @@ class HelpCenterScreen extends StatelessWidget {
                     iconColor: Colors.teal,
                     iconBg: Colors.teal[50]!,
                     title: 'Panduan Penggunaan',
-                    desc: 'Pelajari cara melaporkan dan memantau kondisi lingkungan.',
+                    desc:
+                        'Pelajari cara melaporkan dan memantau kondisi lingkungan.',
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -58,7 +63,8 @@ class HelpCenterScreen extends StatelessWidget {
                     iconColor: Colors.orange,
                     iconBg: Colors.orange[50]!,
                     title: 'Masalah Akun',
-                    desc: 'Bantuan masuk, pengaturan profil, dan keamanan data Anda.',
+                    desc:
+                        'Bantuan masuk, pengaturan profil, dan keamanan data Anda.',
                   ),
                 ),
               ],
@@ -72,7 +78,8 @@ class HelpCenterScreen extends StatelessWidget {
                     iconColor: Colors.green,
                     iconBg: Colors.green[50]!,
                     title: 'Laporan & Verifikasi',
-                    desc: 'Status validasi laporan dan cara memberikan bukti yang kuat.',
+                    desc:
+                        'Status validasi laporan dan cara memberikan bukti yang kuat.',
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -82,7 +89,8 @@ class HelpCenterScreen extends StatelessWidget {
                     iconColor: Colors.brown,
                     iconBg: Colors.brown[50]!,
                     title: 'Kebijakan Privasi',
-                    desc: 'Informasi bagaimana EarthCare menjaga dan memproses data Anda.',
+                    desc:
+                        'Informasi bagaimana EarthCare menjaga dan memproses data Anda.',
                   ),
                 ),
               ],
@@ -92,7 +100,11 @@ class HelpCenterScreen extends StatelessWidget {
             // FAQ Section
             const Text(
               'Pertanyaan Populer',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
             const SizedBox(height: 16),
             _buildFaqItem(
@@ -110,7 +122,11 @@ class HelpCenterScreen extends StatelessWidget {
             const Center(
               child: Text(
                 'Masih butuh bantuan? Hubungi Kami',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -120,14 +136,20 @@ class HelpCenterScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0C3B2E),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: () {},
                 icon: const Icon(Icons.chat, color: Colors.white, size: 18),
                 label: const Text(
                   'WhatsApp Kami',
-                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
@@ -171,12 +193,20 @@ class HelpCenterScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.black87,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 desc,
-                style: TextStyle(fontSize: 10, color: Colors.grey[600], height: 1.4),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
               ),
             ],
           ),
@@ -200,14 +230,22 @@ class HelpCenterScreen extends StatelessWidget {
           tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           title: Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.black87,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
               child: Text(
                 answer,
-                style: TextStyle(fontSize: 11, color: Colors.grey[600], height: 1.5),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
               ),
             ),
           ],

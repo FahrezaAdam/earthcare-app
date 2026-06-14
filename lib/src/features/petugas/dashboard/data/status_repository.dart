@@ -18,10 +18,10 @@ class StatusRepository {
     try {
       final data = {
         'status': status,
-        if (note != null) 'note': note,
-        if (photoUrl != null) 'photo_url': photoUrl,
-        if (assignedOfficerId != null) 'assigned_officer_id': assignedOfficerId,
-        if (assignedOfficerIds != null) 'assigned_officer_ids': assignedOfficerIds,
+        'note': ?note,
+        'photo_url': ?photoUrl,
+        'assigned_officer_id': ?assignedOfficerId,
+        'assigned_officer_ids': ?assignedOfficerIds,
       };
 
       final response = await _apiClient.dio.patch(

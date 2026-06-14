@@ -29,7 +29,6 @@ class _PetugasReportDetailScreenState
     extends ConsumerState<PetugasReportDetailScreen> {
   bool _isLoading = false;
   List<dynamic> _history = [];
-  bool _isLoadingHistory = false;
 
   @override
   void initState() {
@@ -38,15 +37,12 @@ class _PetugasReportDetailScreenState
   }
 
   Future<void> _loadHistory() async {
-    setState(() => _isLoadingHistory = true);
     try {
       final repo = ref.read(statusRepositoryProvider);
       final history = await repo.getStatusHistory(widget.report.id);
       if (mounted) setState(() => _history = history);
     } catch (e) {
-      print('Error loading history: $e');
-    } finally {
-      if (mounted) setState(() => _isLoadingHistory = false);
+      debugPrint('Error loading history: $e');
     }
   }
 
@@ -171,7 +167,7 @@ class _PetugasReportDetailScreenState
       await newFile.writeAsBytes(modifiedBytes);
       return newFile;
     } catch (e) {
-      print('Error stamping image: $e');
+      debugPrint('Error stamping image: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -256,6 +252,7 @@ class _PetugasReportDetailScreenState
                       );
                       if (pickedFile != null) {
                         setModalState(() => isUploading = true);
+                        if (!context.mounted) return;
                         // Add timestamp IMMEDIATELY so user can see it in preview
                         final stamped = await _addTimestampToImage(
                           context,
@@ -334,6 +331,7 @@ class _PetugasReportDetailScreenState
                                 );
                               } catch (e) {
                                 setModalState(() => isUploading = false);
+                                if (!context.mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text('Gagal upload foto: $e'),
@@ -739,7 +737,7 @@ class _PetugasReportDetailScreenState
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ],
             ),
@@ -759,7 +757,7 @@ class _PetugasReportDetailScreenState
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       offset: const Offset(0, -5),
                       blurRadius: 10,
                     ),
@@ -1034,7 +1032,7 @@ class _LocationMapWidgetState extends State<_LocationMapWidget> {
                               height: 40,
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.withOpacity(0.3),
+                                  color: Colors.blue.withValues(alpha: 0.3),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Center(

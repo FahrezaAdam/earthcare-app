@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../report/data/report_provider.dart';
 import '../../report/data/report_repository.dart';
 import '../../../shared/auth/data/auth_provider.dart';
@@ -348,16 +347,30 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                       if (rawReport.commentCount >= 5) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.red[100],
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Row(
                             children: [
-                              Icon(Icons.local_fire_department, color: Colors.red, size: 10),
+                              Icon(
+                                Icons.local_fire_department,
+                                color: Colors.red,
+                                size: 10,
+                              ),
                               SizedBox(width: 2),
-                              Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+                              Text(
+                                'URGENT',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -444,98 +457,115 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                       ),
                       Row(
                         children: [
-                          Icon(Icons.chat_bubble_outline, size: 16, color: Colors.grey[600]),
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
                           const SizedBox(width: 4),
                           Text(
-                            rawReport.commentCount > 0 
-                                ? 'Diskusi (${rawReport.commentCount})' 
-                                : 'Diskusi', 
-                            style: TextStyle(color: Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold)
+                            rawReport.commentCount > 0
+                                ? 'Diskusi (${rawReport.commentCount})'
+                                : 'Diskusi',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           if (rawReport.status == 'received' &&
-                              (_filter == 'me' || rawReport.userId == currentUserId))
+                              (_filter == 'me' ||
+                                  rawReport.userId == currentUserId))
                             InkWell(
-                          onTap: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text(
-                                  'Batalkan Laporan?',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                content: const Text(
-                                  'Apakah Anda yakin ingin membatalkan laporan ini? Data akan dihapus permanen.',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => context.pop(false),
-                                    child: const Text(
-                                      'Tidak',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red,
-                                    ),
-                                    onPressed: () => context.pop(true),
-                                    child: const Text(
-                                      'Ya, Batalkan',
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-
-                            if (confirm == true && context.mounted) {
-                              try {
-                                final repo = ref.read(reportRepositoryProvider);
-                                await repo.deleteReport(rawReport.id);
-                                ref.invalidate(reportsProvider('me'));
-                                ref.invalidate(reportsProvider('all'));
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Laporan berhasil dibatalkan',
+                              onTap: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text(
+                                      'Batalkan Laporan?',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      backgroundColor: Colors.green,
                                     ),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Gagal: $e'),
-                                      backgroundColor: Colors.red,
+                                    content: const Text(
+                                      'Apakah Anda yakin ingin membatalkan laporan ini? Data akan dihapus permanen.',
                                     ),
-                                  );
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => context.pop(false),
+                                        child: const Text(
+                                          'Tidak',
+                                          style: TextStyle(color: Colors.grey),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                        ),
+                                        onPressed: () => context.pop(true),
+                                        child: const Text(
+                                          'Ya, Batalkan',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm == true && context.mounted) {
+                                  try {
+                                    final repo = ref.read(
+                                      reportRepositoryProvider,
+                                    );
+                                    await repo.deleteReport(rawReport.id);
+                                    ref.invalidate(reportsProvider('me'));
+                                    ref.invalidate(reportsProvider('all'));
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Laporan berhasil dibatalkan',
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Gagal: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
                                 }
-                              }
-                            }
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.red.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Batalkan',
-                              style: TextStyle(
-                                color: Colors.red,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Batalkan',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
-                            ),
-                          ),
                         ],
                       ),
                     ],

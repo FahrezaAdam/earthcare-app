@@ -4,7 +4,6 @@ import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img_pkg;
 import 'package:intl/intl.dart';
 
@@ -37,7 +36,8 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
     if (!mounted) return;
     final now = DateTime.now();
     setState(() {
-      _currentTime = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+      _currentTime =
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')} ${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
     });
     Future.delayed(const Duration(seconds: 1), _updateTime);
   }
@@ -58,7 +58,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
     if (permission == LocationPermission.deniedForever) return;
 
     final position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
     if (mounted) {
       setState(() {
@@ -73,7 +73,8 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        final addr = '${place.street ?? place.name}, ${place.subLocality ?? place.locality}, ${place.administrativeArea}';
+        final addr =
+            '${place.street ?? place.name}, ${place.subLocality ?? place.locality}, ${place.administrativeArea}';
         if (mounted) {
           setState(() {
             _address = addr;
@@ -115,9 +116,9 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
     } catch (e) {
       debugPrint('Error initializing camera controller: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Kamera gagal dibuka: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Kamera gagal dibuka: $e')));
       }
     }
 
@@ -129,10 +130,10 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
   Future<void> _switchCamera() async {
     if (_cameras.isEmpty || _cameras.length == 1) return;
     if (_controller == null) return;
-    
+
     final nextIndex = (_selectedCameraIndex + 1) % _cameras.length;
     final newCamera = _cameras[nextIndex];
-    
+
     try {
       // Switch the active lens without dropping the CameraPreview widget
       await _controller!.setDescription(newCamera);
@@ -145,17 +146,18 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       setState(() {
         _isInitializing = true;
       });
-      
+
       try {
         await _controller!.dispose();
       } catch (_) {}
-      
+
       final fallbackController = CameraController(
         newCamera,
-        ResolutionPreset.medium, // Use medium to avoid hardware limits on front camera
+        ResolutionPreset
+            .medium, // Use medium to avoid hardware limits on front camera
         enableAudio: false,
       );
-      
+
       try {
         await fallbackController.initialize();
         _controller = fallbackController;
@@ -165,7 +167,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       } catch (err) {
         debugPrint('Fallback init failed: $err');
       }
-      
+
       if (mounted) {
         setState(() {
           _isInitializing = false;
@@ -184,12 +186,12 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       });
 
       final XFile picture = await _controller!.takePicture();
-      
+
       // Process image to add timestamp
       final File file = File(picture.path);
       final bytes = await file.readAsBytes();
       img_pkg.Image? decodedImage = img_pkg.decodeImage(bytes);
-      
+
       if (decodedImage != null) {
         // Bake EXIF orientation so portrait photos don't mess up text rendering
         decodedImage = img_pkg.bakeOrientation(decodedImage);
@@ -200,11 +202,13 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
         }
 
         if (!widget.isProfileMode) {
-          final timestamp = DateFormat('dd MMM yyyy HH:mm:ss').format(DateTime.now());
-          final coordsText = _currentPosition != null 
-              ? '${_currentPosition!.latitude}, ${_currentPosition!.longitude}' 
+          final timestamp = DateFormat(
+            'dd MMM yyyy HH:mm:ss',
+          ).format(DateTime.now());
+          final coordsText = _currentPosition != null
+              ? '${_currentPosition!.latitude}, ${_currentPosition!.longitude}'
               : '0, 0';
-          
+
           // Draw semi-transparent black background
           img_pkg.fillRect(
             decodedImage,
@@ -224,7 +228,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
             y: decodedImage.height - 115,
             color: img_pkg.ColorRgb8(255, 255, 255),
           );
-          
+
           // Draw Coordinates
           img_pkg.drawString(
             decodedImage,
@@ -234,9 +238,11 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
             y: decodedImage.height - 80,
             color: img_pkg.ColorRgb8(255, 255, 255),
           );
-          
+
           // Draw Location
-          final displayAddress = _address.length > 50 ? '${_address.substring(0, 50)}...' : _address;
+          final displayAddress = _address.length > 50
+              ? '${_address.substring(0, 50)}...'
+              : _address;
           img_pkg.drawString(
             decodedImage,
             'LOKASI   : $displayAddress',
@@ -246,7 +252,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
             color: img_pkg.ColorRgb8(255, 255, 255),
           );
         }
-        
+
         final outBytes = img_pkg.encodeJpg(decodedImage, quality: 90);
         await file.writeAsBytes(outBytes);
       }
@@ -322,7 +328,9 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.4),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -353,9 +361,13 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    _buildOverlayText('GPS: ${_currentPosition != null ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' : 'Mencari lokasi...'}'),
+                    _buildOverlayText(
+                      'GPS: ${_currentPosition != null ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' : 'Mencari lokasi...'}',
+                    ),
                     _buildOverlayText('Time: $_currentTime WIB'),
-                    _buildOverlayText('Accuracy: ${_currentPosition != null ? '${_currentPosition!.accuracy.toStringAsFixed(1)}m' : '...'} | Report ID: AUTO'),
+                    _buildOverlayText(
+                      'Accuracy: ${_currentPosition != null ? '${_currentPosition!.accuracy.toStringAsFixed(1)}m' : '...'} | Report ID: AUTO',
+                    ),
                   ],
                 ),
               ),
@@ -457,7 +469,10 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
                     ),
                   )
                 else
-                  const SizedBox(width: 48, height: 48), // Empty spacer to keep shutter centered
+                  const SizedBox(
+                    width: 48,
+                    height: 48,
+                  ), // Empty spacer to keep shutter centered
               ],
             ),
           ),

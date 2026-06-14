@@ -8,12 +8,13 @@ final dioProvider = Provider<Dio>((ref) {
       baseUrl: 'https://earthcare-api.vercel.app',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
-      validateStatus: (status) => status != null && status < 500, // Handle 400s manually
+      validateStatus: (status) =>
+          status != null && status < 500, // Handle 400s manually
     ),
   );
 
   dio.interceptors.add(LogInterceptor(responseBody: true, requestBody: true));
-  
+
   // Token Interceptor
   dio.interceptors.add(
     InterceptorsWrapper(

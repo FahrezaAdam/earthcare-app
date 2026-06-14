@@ -35,7 +35,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     _initialName =
         user?['full_name']?.toString() ?? user?['name']?.toString() ?? '';
     _email = user?['email']?.toString() ?? '';
-    _initialPhone = user?['phone']?.toString() ??
+    _initialPhone =
+        user?['phone']?.toString() ??
         user?['phone_number']?.toString() ??
         user?['phoneNumber']?.toString() ??
         user?['no_hp']?.toString() ??
@@ -75,6 +76,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         });
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Gagal memilih gambar: $e'),
@@ -107,7 +109,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 title: const Text('Ambil dari Kamera'),
                 onTap: () async {
                   context.pop();
-                  final result = await context.push<String>('/camera', extra: {'isProfileMode': true});
+                  final result = await context.push<String>(
+                    '/camera',
+                    extra: {'isProfileMode': true},
+                  );
                   if (result != null) {
                     final bytes = await File(result).readAsBytes();
                     setState(() {

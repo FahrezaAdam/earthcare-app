@@ -17,7 +17,8 @@ class AdminReportCommentsScreen extends ConsumerStatefulWidget {
       _AdminReportCommentsScreenState();
 }
 
-class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsScreen> {
+class _AdminReportCommentsScreenState
+    extends ConsumerState<AdminReportCommentsScreen> {
   final TextEditingController _commentController = TextEditingController();
   bool _isSubmittingComment = false;
 
@@ -35,13 +36,19 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
       ref.invalidate(reportsProvider('me'));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Komentar ditambahkan'), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text('Komentar ditambahkan'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengirim: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Gagal mengirim: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -73,10 +80,7 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
             ),
             Text(
               widget.report.ticketId,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ],
         ),
@@ -86,7 +90,9 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
           Expanded(
             child: Consumer(
               builder: (context, ref, child) {
-                final commentsAsync = ref.watch(commentsProvider(widget.report.id));
+                final commentsAsync = ref.watch(
+                  commentsProvider(widget.report.id),
+                );
                 return commentsAsync.when(
                   data: (comments) {
                     if (comments.isEmpty) {
@@ -100,7 +106,7 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                     return ListView.separated(
                       padding: const EdgeInsets.all(16),
                       itemCount: comments.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      separatorBuilder: (_, _) => const SizedBox(height: 16),
                       itemBuilder: (context, index) {
                         final c = comments[index];
                         return Row(
@@ -108,9 +114,19 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                           children: [
                             CircleAvatar(
                               radius: 16,
-                              backgroundColor: const Color(0xFF1B4332).withOpacity(0.2),
-                              backgroundImage: c.userAvatar != null ? NetworkImage(c.userAvatar!) : null,
-                              child: c.userAvatar == null ? const Icon(Icons.person, size: 16, color: Color(0xFF1B4332)) : null,
+                              backgroundColor: const Color(
+                                0xFF1B4332,
+                              ).withValues(alpha: 0.2),
+                              backgroundImage: c.userAvatar != null
+                                  ? NetworkImage(c.userAvatar!)
+                                  : null,
+                              child: c.userAvatar == null
+                                  ? const Icon(
+                                      Icons.person,
+                                      size: 16,
+                                      color: Color(0xFF1B4332),
+                                    )
+                                  : null,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -124,34 +140,66 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Row(
                                           children: [
-                                            Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                            Text(
+                                              c.userName,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 13,
+                                              ),
+                                            ),
                                             const SizedBox(width: 6),
                                             Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 6,
+                                                    vertical: 2,
+                                                  ),
                                               decoration: BoxDecoration(
-                                                color: c.userRole == 'admin' ? Colors.red[100] : (c.userRole == 'petugas' ? Colors.blue[100] : Colors.green[100]),
-                                                borderRadius: BorderRadius.circular(4),
+                                                color: c.userRole == 'admin'
+                                                    ? Colors.red[100]
+                                                    : (c.userRole == 'petugas'
+                                                          ? Colors.blue[100]
+                                                          : Colors.green[100]),
+                                                borderRadius:
+                                                    BorderRadius.circular(4),
                                               ),
                                               child: Text(
                                                 c.userRole.toUpperCase(),
                                                 style: TextStyle(
                                                   fontSize: 8,
                                                   fontWeight: FontWeight.bold,
-                                                  color: c.userRole == 'admin' ? Colors.red[800] : (c.userRole == 'petugas' ? Colors.blue[800] : Colors.green[800]),
+                                                  color: c.userRole == 'admin'
+                                                      ? Colors.red[800]
+                                                      : (c.userRole == 'petugas'
+                                                            ? Colors.blue[800]
+                                                            : Colors
+                                                                  .green[800]),
                                                 ),
                                               ),
                                             ),
                                           ],
                                         ),
-                                        Text(DateFormat('dd/MM HH:mm').format(c.createdAt), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                        Text(
+                                          DateFormat(
+                                            'dd/MM HH:mm',
+                                          ).format(c.createdAt),
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
-                                    Text(c.content, style: const TextStyle(fontSize: 13)),
+                                    Text(
+                                      c.content,
+                                      style: const TextStyle(fontSize: 13),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -161,13 +209,19 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                       },
                     );
                   },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (e, st) => Center(child: Text('Gagal memuat: $e', style: const TextStyle(color: Colors.red))),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, st) => Center(
+                    child: Text(
+                      'Gagal memuat: $e',
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
                 );
               },
             ),
           ),
-          
+
           // Bottom Input Field
           Container(
             padding: const EdgeInsets.all(16),
@@ -175,7 +229,7 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, -4),
                   blurRadius: 10,
                 ),
@@ -191,7 +245,10 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                         hintText: 'Tambahkan komentar...',
                         filled: true,
                         fillColor: Colors.grey[100],
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
@@ -206,7 +263,11 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                   _isSubmittingComment
                       ? const Padding(
                           padding: EdgeInsets.all(12.0),
-                          child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                         )
                       : Container(
                           decoration: const BoxDecoration(
@@ -214,7 +275,11 @@ class _AdminReportCommentsScreenState extends ConsumerState<AdminReportCommentsS
                             shape: BoxShape.circle,
                           ),
                           child: IconButton(
-                            icon: const Icon(Icons.send, color: Colors.white, size: 20),
+                            icon: const Icon(
+                              Icons.send,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                             onPressed: _submitComment,
                           ),
                         ),

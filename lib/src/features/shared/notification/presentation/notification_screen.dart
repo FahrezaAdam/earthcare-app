@@ -21,7 +21,9 @@ class NotificationScreen extends ConsumerWidget {
         'iconColor': Colors.orange[800],
         'isAvatar': true,
       };
-    } else if (lowerText.contains('sistem') || lowerText.contains('tim') || lowerText.contains('sedang menuju')) {
+    } else if (lowerText.contains('sistem') ||
+        lowerText.contains('tim') ||
+        lowerText.contains('sedang menuju')) {
       return {
         'tag': 'UPDATE SISTEM',
         'tagColor': Colors.black87,
@@ -30,7 +32,8 @@ class NotificationScreen extends ConsumerWidget {
         'iconColor': Colors.white,
         'isAvatar': false,
       };
-    } else if (lowerText.contains('cuaca') || lowerText.contains('peringatan')) {
+    } else if (lowerText.contains('cuaca') ||
+        lowerText.contains('peringatan')) {
       return {
         'tag': 'PERINGATAN CUACA',
         'tagColor': Colors.red[700],
@@ -66,7 +69,11 @@ class NotificationScreen extends ConsumerWidget {
         ),
         title: const Text(
           'Notifikasi',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
         ),
         actions: [
           TextButton(
@@ -76,7 +83,9 @@ class NotificationScreen extends ConsumerWidget {
                 ref.invalidate(notificationsProvider);
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menandai semua dibaca: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Gagal menandai semua dibaca: $e')),
+                  );
                 }
               }
             },
@@ -103,7 +112,7 @@ class NotificationScreen extends ConsumerWidget {
             itemBuilder: (context, index) {
               final notif = notifications[index];
               final style = _getNotifStyle(notif.title, notif.body);
-              
+
               // Simple grouping mock based on index for visual fidelity to screenshot
               // In production, you would parse createdAt and compare dates
               Widget? header;
@@ -116,7 +125,7 @@ class NotificationScreen extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (header != null) header,
+                  ?header,
                   _buildNotificationCard(context, ref, notif, style),
                   const SizedBox(height: 16),
                 ],
@@ -124,7 +133,9 @@ class NotificationScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF1B4332)),
+        ),
         error: (e, st) => Center(child: Text('Error: $e')),
       ),
     );
@@ -145,7 +156,12 @@ class NotificationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNotificationCard(BuildContext context, WidgetRef ref, NotificationModel notif, Map<String, dynamic> style) {
+  Widget _buildNotificationCard(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationModel notif,
+    Map<String, dynamic> style,
+  ) {
     return GestureDetector(
       onTap: () async {
         if (!notif.isRead) {
@@ -154,11 +170,13 @@ class NotificationScreen extends ConsumerWidget {
             ref.invalidate(notificationsProvider);
           } catch (e) {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menandai dibaca: $e')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Gagal menandai dibaca: $e')),
+              );
             }
           }
         }
-        
+
         // Navigasi ke detail laporan jika reportId ada
         if (notif.reportId != null && notif.reportId!.isNotEmpty) {
           final role = ref.read(authProvider).role;
@@ -169,22 +187,27 @@ class NotificationScreen extends ConsumerWidget {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                  builder: (_) => const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF1B4332)),
+                  ),
                 );
               }
 
               final reportRepo = ref.read(reportRepositoryProvider);
               final report = await reportRepo.getReportById(notif.reportId!);
-              
+
               if (context.mounted) {
                 Navigator.of(context).pop(); // Tutup loading dialog
-                
+
                 if (role == 'warga' || role == 'citizen') {
-                  context.push('/track-detail', extra: {
-                    'report': report,
-                    'title': report.title,
-                    'ticketId': report.id,
-                  });
+                  context.push(
+                    '/track-detail',
+                    extra: {
+                      'report': report,
+                      'title': report.title,
+                      'ticketId': report.id,
+                    },
+                  );
                 } else if (role == 'admin') {
                   context.push('/admin/report-detail', extra: report);
                 } else if (role == 'petugas' || role == 'officer') {
@@ -194,7 +217,9 @@ class NotificationScreen extends ConsumerWidget {
             } catch (e) {
               if (context.mounted) {
                 Navigator.of(context).pop(); // Tutup loading dialog jika error
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memuat detail laporan: $e')));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Gagal memuat detail laporan: $e')),
+                );
               }
             }
           }
@@ -203,7 +228,9 @@ class NotificationScreen extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: notif.isRead ? Colors.white : const Color(0xFFF0FDF4), // Colors.green[50]
+          color: notif.isRead
+              ? Colors.white
+              : const Color(0xFFF0FDF4), // Colors.green[50]
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -225,7 +252,7 @@ class NotificationScreen extends ConsumerWidget {
                       width: 48,
                       height: 48,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
@@ -246,7 +273,7 @@ class NotificationScreen extends ConsumerWidget {
                     child: Icon(style['icon'], color: style['iconColor']),
                   ),
             const SizedBox(width: 16),
-            
+
             // Content
             Expanded(
               child: Column(
@@ -283,13 +310,13 @@ class NotificationScreen extends ConsumerWidget {
                                 shape: BoxShape.circle,
                               ),
                             ),
-                          ]
+                          ],
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Text combination
                   Text.rich(
                     TextSpan(
@@ -316,7 +343,7 @@ class NotificationScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  
+
                   // Optional Status text check
                   if (notif.body.toLowerCase().contains('status:'))
                     Padding(

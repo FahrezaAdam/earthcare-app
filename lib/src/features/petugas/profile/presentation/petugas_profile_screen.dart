@@ -14,7 +14,6 @@ class PetugasProfileScreen extends ConsumerWidget {
 
     final name = user?['name'] ?? 'Petugas';
     final avatarUrl = user?['avatar_url'] as String?;
-    final sector = user?['sector'] ?? 'Petugas Lapangan';
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
@@ -47,10 +46,7 @@ class PetugasProfileScreen extends ConsumerWidget {
             letterSpacing: 2.0,
           ),
         ),
-        actions: const [
-          NotificationBellButton(),
-          SizedBox(width: 8),
-        ],
+        actions: const [NotificationBellButton(), SizedBox(width: 8)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -76,11 +72,12 @@ class PetugasProfileScreen extends ConsumerWidget {
                               fit: BoxFit.cover,
                               width: 100,
                               height: 100,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.broken_image,
-                                color: Colors.white,
-                                size: 40,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
                             )
                           : const Icon(
                               Icons.person,
@@ -104,10 +101,7 @@ class PetugasProfileScreen extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               user?['email'] ?? '-',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Container(
@@ -137,34 +131,69 @@ class PetugasProfileScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                    leading: const Icon(Icons.person_outline, color: Color(0xFF1B4332)),
-                    title: const Text('Edit Profil', style: TextStyle(fontWeight: FontWeight.w600)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: const Icon(
+                      Icons.person_outline,
+                      color: Color(0xFF1B4332),
+                    ),
+                    title: const Text(
+                      'Edit Profil',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
                     onTap: () {
                       context.push('/edit-profile');
                     },
                   ),
                   const Divider(height: 1, thickness: 1),
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     leading: Icon(Icons.logout, color: Colors.red[700]),
-                    title: Text('Keluar', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red[700])),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    title: Text(
+                      'Keluar',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red[700],
+                      ),
+                    ),
+                    trailing: const Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                    ),
                     onTap: () {
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.bold)),
-                            content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
+                            title: const Text(
+                              'Konfirmasi Logout',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            content: const Text(
+                              'Apakah Anda yakin ingin keluar dari aplikasi?',
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
                             ),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.of(context).pop(),
-                                child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Batal',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
@@ -178,7 +207,13 @@ class PetugasProfileScreen extends ConsumerWidget {
                                   ref.read(authProvider.notifier).logout();
                                   context.go('/login');
                                 },
-                                child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Keluar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           );

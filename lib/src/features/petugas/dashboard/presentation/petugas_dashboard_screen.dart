@@ -48,10 +48,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
               letterSpacing: 2.0,
             ),
           ),
-          actions: const [
-            NotificationBellButton(),
-            SizedBox(width: 8),
-          ],
+          actions: const [NotificationBellButton(), SizedBox(width: 8)],
           bottom: const TabBar(
             labelColor: Color(0xFF1B4332),
             unselectedLabelColor: Colors.grey,
@@ -71,18 +68,29 @@ class PetugasDashboardScreen extends ConsumerWidget {
               child: reportsAsyncValue.when(
                 data: (reports) {
                   // Filter for this officer ONLY
-                  final myReports = reports.where((r) => 
-                    r.assignedOfficerIds.contains(userId) || r.assignedOfficerId == userId
-                  ).toList();
+                  final myReports = reports
+                      .where(
+                        (r) =>
+                            r.assignedOfficerIds.contains(userId) ||
+                            r.assignedOfficerId == userId,
+                      )
+                      .toList();
 
-                  final baruReports = myReports.where((r) => r.status.toLowerCase() == 'assigned' || r.status.toLowerCase() == 'received').toList();
-                  final berjalanReports = myReports.where((r) => r.status.toLowerCase() == 'in_progress').toList();
-                  final selesaiReports = myReports.where((r) => r.status.toLowerCase() == 'resolved').toList();
+                  final berjalanReports = myReports
+                      .where((r) => r.status.toLowerCase() == 'in_progress')
+                      .toList();
+                  final selesaiReports = myReports
+                      .where((r) => r.status.toLowerCase() == 'resolved')
+                      .toList();
 
                   return TabBarView(
                     children: [
                       _buildReportList(context, myReports, 'Semua'),
-                      _buildReportList(context, berjalanReports, 'Sedang Berjalan'),
+                      _buildReportList(
+                        context,
+                        berjalanReports,
+                        'Sedang Berjalan',
+                      ),
                       _buildReportList(context, selesaiReports, 'Selesai'),
                     ],
                   );
@@ -97,7 +105,11 @@ class PetugasDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildReportList(BuildContext context, List<ReportModel> reports, String tabType) {
+  Widget _buildReportList(
+    BuildContext context,
+    List<ReportModel> reports,
+    String tabType,
+  ) {
     if (reports.isEmpty) {
       return Center(
         child: Text(
@@ -118,10 +130,14 @@ class PetugasDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, ReportModel report, String tabType) {
+  Widget _buildTaskCard(
+    BuildContext context,
+    ReportModel report,
+    String tabType,
+  ) {
     final isSelesai = report.status.toLowerCase() == 'resolved';
     final isBaru = report.status.toLowerCase() == 'assigned';
-    
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -129,7 +145,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -146,25 +162,47 @@ class PetugasDashboardScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined, size: 16, color: Colors.orange[800]),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Colors.orange[800],
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       _formatCategory(report.category).toUpperCase(),
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange[800]),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[800],
+                      ),
                     ),
                     if (report.commentCount >= 5) ...[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red[100],
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Row(
                           children: [
-                            Icon(Icons.local_fire_department, color: Colors.red, size: 10),
+                            Icon(
+                              Icons.local_fire_department,
+                              color: Colors.red,
+                              size: 10,
+                            ),
                             SizedBox(width: 2),
-                            Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+                            Text(
+                              'URGENT',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -174,7 +212,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
               ],
             ),
           ),
-          
+
           // Title and Description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -183,14 +221,23 @@ class PetugasDashboardScreen extends ConsumerWidget {
               children: [
                 Text(
                   report.title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  report.description ?? 'Laporan warga mengenai pelanggaran di lokasi ini.',
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.5),
+                  report.description ??
+                      'Laporan warga mengenai pelanggaran di lokasi ini.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    height: 1.5,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -199,7 +246,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
           ),
 
           const SizedBox(height: 16),
-          
+
           // Image preview (if any)
           if (report.imageUrl.isNotEmpty)
             Padding(
@@ -219,10 +266,10 @@ class PetugasDashboardScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 16),
           const Divider(height: 1),
-          
+
           // Footer actions
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -233,7 +280,10 @@ class PetugasDashboardScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                     const SizedBox(width: 4),
-                    Text(report.time, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                    Text(
+                      report.time,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
                   ],
                 ),
                 Row(
@@ -243,7 +293,10 @@ class PetugasDashboardScreen extends ConsumerWidget {
                       width: 36,
                       child: ElevatedButton(
                         onPressed: () {
-                          context.push('/petugas/report-comments', extra: report);
+                          context.push(
+                            '/petugas/report-comments',
+                            extra: report,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
@@ -294,15 +347,29 @@ class PetugasDashboardScreen extends ConsumerWidget {
                         context.push('/petugas/report-detail', extra: report);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelesai ? Colors.grey[300] : const Color(0xFF0A2B1D),
-                        foregroundColor: isSelesai ? Colors.grey[800] : Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        backgroundColor: isSelesai
+                            ? Colors.grey[300]
+                            : const Color(0xFF0A2B1D),
+                        foregroundColor: isSelesai
+                            ? Colors.grey[800]
+                            : Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         elevation: 0,
                       ),
                       child: Text(
-                        isSelesai ? 'Detail Tugas' : (isBaru ? 'Terima Tugas ->' : 'Update Tugas ->'),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        isSelesai
+                            ? 'Detail Tugas'
+                            : (isBaru ? 'Terima Tugas ->' : 'Update Tugas ->'),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -319,7 +386,11 @@ class PetugasDashboardScreen extends ConsumerWidget {
     if (category.isEmpty) return category;
     return category
         .split('_')
-        .map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '')
+        .map(
+          (word) => word.isNotEmpty
+              ? '${word[0].toUpperCase()}${word.substring(1)}'
+              : '',
+        )
         .join(' ');
   }
 }

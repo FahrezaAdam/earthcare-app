@@ -9,9 +9,7 @@ void main() {
   runApp(
     DevicePreview(
       enabled: !kReleaseMode,
-      builder: (context) => const ProviderScope(
-        child: MyApp(),
-      ),
+      builder: (context) => const ProviderScope(child: MyApp()),
     ),
   );
 }

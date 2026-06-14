@@ -22,9 +22,7 @@ import '../../features/shared/profile/presentation/edit_profile_screen.dart';
 import '../../features/shared/profile/presentation/help_center_screen.dart';
 import '../../features/admin/dashboard/presentation/admin_dashboard_screen.dart';
 import '../../features/petugas/main/presentation/petugas_main_screen.dart';
-import '../../features/petugas/dashboard/presentation/petugas_dashboard_screen.dart';
 import '../../features/petugas/report/presentation/petugas_report_detail_screen.dart';
-import '../../features/petugas/profile/presentation/petugas_profile_screen.dart';
 import '../../features/shared/notification/presentation/notification_screen.dart';
 import '../../features/admin/petugas/presentation/admin_add_petugas_screen.dart';
 import '../../features/admin/petugas/presentation/admin_petugas_profile_screen.dart';
@@ -81,7 +79,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
           return TrackDetailScreen(
-            title: extra?['title'] as String? ?? 'Laporan Penumpukan Sampah Liar - Kawasan Hutan Kota',
+            title:
+                extra?['title'] as String? ??
+                'Laporan Penumpukan Sampah Liar - Kawasan Hutan Kota',
             ticketId: extra?['ticketId'] as String? ?? 'REP-9432',
             report: extra?['report'],
           );
@@ -104,7 +104,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final report = state.extra as ReportModel?;
           if (report == null) {
-            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan. Silakan kembali ke halaman sebelumnya.')));
+            return const Scaffold(
+              body: Center(
+                child: Text(
+                  'Laporan tidak ditemukan. Silakan kembali ke halaman sebelumnya.',
+                ),
+              ),
+            );
           }
           return AdminReportDetailScreen(report: report);
         },
@@ -114,7 +120,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final report = state.extra as ReportModel?;
           if (report == null) {
-            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+            return const Scaffold(
+              body: Center(child: Text('Laporan tidak ditemukan.')),
+            );
           }
           return AdminReportCommentsScreen(report: report);
         },
@@ -128,7 +136,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final report = state.extra as ReportModel?;
           if (report == null) {
-            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+            return const Scaffold(
+              body: Center(child: Text('Laporan tidak ditemukan.')),
+            );
           }
           return PetugasReportDetailScreen(report: report);
         },
@@ -138,7 +148,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final report = state.extra as ReportModel?;
           if (report == null) {
-            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+            return const Scaffold(
+              body: Center(child: Text('Laporan tidak ditemukan.')),
+            );
           }
           return PetugasReportCommentsScreen(report: report);
         },

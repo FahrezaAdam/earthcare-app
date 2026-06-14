@@ -11,7 +11,7 @@ class NotificationRepository {
   Future<List<NotificationModel>> getNotifications() async {
     try {
       final response = await _apiClient.dio.get('/api/status/notifications');
-      
+
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'] ?? [];
         return data.map((json) => NotificationModel.fromJson(json)).toList();
@@ -19,27 +19,37 @@ class NotificationRepository {
         throw Exception(response.data['message'] ?? 'Gagal memuat notifikasi');
       }
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal memuat notifikasi dari server');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal memuat notifikasi dari server',
+      );
     }
   }
 
   Future<bool> markAsRead(String id) async {
     try {
-      final response = await _apiClient.dio.patch('/api/status/notifications/$id/read');
-      
+      final response = await _apiClient.dio.patch(
+        '/api/status/notifications/$id/read',
+      );
+
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menandai notifikasi');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal menandai notifikasi',
+      );
     }
   }
 
   Future<bool> markAllAsRead() async {
     try {
-      final response = await _apiClient.dio.patch('/api/status/notifications/read-all');
-      
+      final response = await _apiClient.dio.patch(
+        '/api/status/notifications/read-all',
+      );
+
       return response.statusCode == 200 || response.statusCode == 201;
     } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Gagal menandai semua notifikasi');
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal menandai semua notifikasi',
+      );
     }
   }
 }

@@ -12,7 +12,8 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
-    final userName = user?['full_name'] ?? user?['name'] ?? 'Pengguna EarthCare';
+    final userName =
+        user?['full_name'] ?? user?['name'] ?? 'Pengguna EarthCare';
     final userEmail = user?['email'] ?? 'Memuat...';
     final userAvatar = user?['avatar_url'];
 
@@ -22,7 +23,10 @@ class ProfileScreen extends ConsumerWidget {
       orElse: () => '-',
     );
     final completedReports = reportsAsync.maybeWhen(
-      data: (reports) => reports.where((r) => r.isCompleted || r.status.toLowerCase() == 'resolved').length.toString(),
+      data: (reports) => reports
+          .where((r) => r.isCompleted || r.status.toLowerCase() == 'resolved')
+          .length
+          .toString(),
       orElse: () => '-',
     );
 
@@ -57,10 +61,7 @@ class ProfileScreen extends ConsumerWidget {
             letterSpacing: 2.0,
           ),
         ),
-        actions: const [
-          NotificationBellButton(),
-          SizedBox(width: 8),
-        ],
+        actions: const [NotificationBellButton(), SizedBox(width: 8)],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -80,17 +81,20 @@ class ProfileScreen extends ConsumerWidget {
                       border: Border.all(color: Colors.green[100]!, width: 4),
                     ),
                     child: ClipOval(
-                      child: (userAvatar != null && userAvatar.toString().isNotEmpty)
+                      child:
+                          (userAvatar != null &&
+                              userAvatar.toString().isNotEmpty)
                           ? Image.network(
                               userAvatar,
                               fit: BoxFit.cover,
                               width: 100,
                               height: 100,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.broken_image,
-                                color: Colors.white,
-                                size: 40,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.broken_image,
+                                    color: Colors.white,
+                                    size: 40,
+                                  ),
                             )
                           : const Icon(
                               Icons.person,
@@ -114,10 +118,7 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 4),
             Text(
               userEmail,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Container(
@@ -168,9 +169,13 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             loading: () => const SizedBox(
                               height: 38,
-                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF1B4332),
+                                ),
+                              ),
                             ),
-                            error: (_, __) => const Text(
+                            error: (_, _) => const Text(
                               '-',
                               style: TextStyle(
                                 fontSize: 32,
@@ -222,9 +227,13 @@ class ProfileScreen extends ConsumerWidget {
                             ),
                             loading: () => const SizedBox(
                               height: 38,
-                              child: Center(child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF1B4332),
+                                ),
+                              ),
                             ),
-                            error: (_, __) => const Text(
+                            error: (_, _) => const Text(
                               '-',
                               style: TextStyle(
                                 fontSize: 32,
@@ -273,7 +282,8 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const Divider(height: 1, thickness: 1),
                   ],
-                  if (authState.role == 'citizen' || authState.role == 'warga') ...[
+                  if (authState.role == 'citizen' ||
+                      authState.role == 'warga') ...[
                     _buildMenuItem(
                       icon: Icons.help_outline,
                       title: 'Pusat Bantuan',
@@ -293,27 +303,53 @@ class ProfileScreen extends ConsumerWidget {
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
-                            title: const Text('Konfirmasi Keluar', style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1B4332))),
-                            content: const Text('Apakah Anda yakin ingin keluar dari aplikasi?'),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Text(
+                              'Konfirmasi Keluar',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
+                            ),
+                            content: const Text(
+                              'Apakah Anda yakin ingin keluar dari aplikasi?',
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop(); // Close dialog
                                 },
-                                child: const Text('Batal', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Batal',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.red[700],
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
                                 onPressed: () {
                                   Navigator.of(context).pop(); // Close dialog
-                                  ref.read(authProvider.notifier).logout(); // Clear token
+                                  ref
+                                      .read(authProvider.notifier)
+                                      .logout(); // Clear token
                                   context.go('/login'); // Perform logout
                                 },
-                                child: const Text('Keluar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text(
+                                  'Keluar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ],
                           );
