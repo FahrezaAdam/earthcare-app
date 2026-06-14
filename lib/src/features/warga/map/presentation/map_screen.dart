@@ -151,27 +151,23 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       final markers = reports.map((data) {
                         // Determine color based on status
                         Color markerColor;
-                        switch (data.status.toLowerCase()) {
-                          case 'received':
-                            markerColor = Colors.orange;
-                            break;
-                          case 'kritis':
-                            markerColor = Colors.red[700]!;
-                            break;
-                          case 'verified':
-                            markerColor = Colors.blue;
-                            break;
-                          case 'assigned':
-                            markerColor = Colors.indigo;
-                            break;
-                          case 'in_progress':
-                            markerColor = Colors.purple;
-                            break;
-                          case 'resolved':
-                            markerColor = Colors.green;
-                            break;
-                          default:
-                            markerColor = Colors.grey;
+                        if (data.commentCount >= 5) {
+                          markerColor = Colors.red[700]!; // Kritis (Urgent)
+                        } else {
+                          switch (data.status.toLowerCase()) {
+                            case 'received':
+                            case 'assigned':
+                              markerColor = Colors.orange; // Aktif
+                              break;
+                            case 'in_progress':
+                              markerColor = Colors.purple; // Sedang diproses
+                              break;
+                            case 'resolved':
+                              markerColor = Colors.green; // Teratasi
+                              break;
+                            default:
+                              markerColor = Colors.orange; // Default Aktif
+                          }
                         }
 
                         return Marker(

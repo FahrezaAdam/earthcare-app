@@ -70,10 +70,9 @@ class PetugasDashboardScreen extends ConsumerWidget {
             Expanded(
               child: reportsAsyncValue.when(
                 data: (reports) {
-                  // Filter for this officer AND unassigned new reports
+                  // Filter for this officer ONLY
                   final myReports = reports.where((r) => 
-                    r.assignedOfficerId == userId || 
-                    (r.assignedOfficerId == null && r.status.toLowerCase() == 'received')
+                    r.assignedOfficerIds.contains(userId) || r.assignedOfficerId == userId
                   ).toList();
 
                   final baruReports = myReports.where((r) => r.status.toLowerCase() == 'assigned' || r.status.toLowerCase() == 'received').toList();
@@ -153,6 +152,23 @@ class PetugasDashboardScreen extends ConsumerWidget {
                       _formatCategory(report.category).toUpperCase(),
                       style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange[800]),
                     ),
+                    if (report.commentCount >= 5) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red[100],
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.local_fire_department, color: Colors.red, size: 10),
+                            SizedBox(width: 2),
+                            Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -220,21 +236,76 @@ class PetugasDashboardScreen extends ConsumerWidget {
                     Text(report.time, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   ],
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    context.push('/petugas/report-detail', extra: report);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isSelesai ? Colors.grey[300] : const Color(0xFF0A2B1D),
-                    foregroundColor: isSelesai ? Colors.grey[800] : Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    isSelesai ? 'Detail Tugas' : (isBaru ? 'Terima Tugas ->' : 'Update Tugas ->'),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
+                Row(
+                  children: [
+                    SizedBox(
+                      height: 36,
+                      width: 36,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.push('/petugas/report-comments', extra: report);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF0F3224),
+                          elevation: 0,
+                          padding: EdgeInsets.zero,
+                          side: BorderSide(color: Colors.grey[300]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const Icon(Icons.chat_bubble_outline, size: 16),
+                            if (report.commentCount > 0)
+                              Positioned(
+                                right: 4,
+                                top: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 10,
+                                    minHeight: 10,
+                                  ),
+                                  child: Text(
+                                    '${report.commentCount}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 6,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.push('/petugas/report-detail', extra: report);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isSelesai ? Colors.grey[300] : const Color(0xFF0A2B1D),
+                        foregroundColor: isSelesai ? Colors.grey[800] : Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        isSelesai ? 'Detail Tugas' : (isBaru ? 'Terima Tugas ->' : 'Update Tugas ->'),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

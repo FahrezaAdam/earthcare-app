@@ -16,7 +16,8 @@ class ReportModel {
   final String? reporterName;
   final String? reporterAvatar;
   final String? reporterPhone;
-  final String? assignedOfficerId;
+  final String? assignedOfficerId; // legacy
+  final List<String> assignedOfficerIds;
   final int commentCount;
 
   ReportModel({
@@ -37,6 +38,7 @@ class ReportModel {
     this.reporterAvatar,
     this.reporterPhone,
     this.assignedOfficerId,
+    this.assignedOfficerIds = const [],
     this.commentCount = 0,
   });
 
@@ -50,6 +52,21 @@ class ReportModel {
       count = json['report_comments'][0]['count'] as int? ?? 0;
     } else if (json['commentCount'] != null) {
       count = json['commentCount'] as int;
+    }
+
+    List<String> officerIds = [];
+    if (json['report_assignees'] is List) {
+      officerIds = (json['report_assignees'] as List)
+          .map((e) => e['officer_id']?.toString() ?? '')
+          .where((id) => id.isNotEmpty)
+          .toList();
+    } else if (json['assignedOfficerIds'] is List) {
+      officerIds = List<String>.from(json['assignedOfficerIds']);
+    }
+    
+    // Add legacy assigned_officer_id if it exists and not in the list
+    if (json['assigned_officer_id'] != null && !officerIds.contains(json['assigned_officer_id'].toString())) {
+      officerIds.add(json['assigned_officer_id'].toString());
     }
 
     return ReportModel(
@@ -85,6 +102,7 @@ class ReportModel {
       reporterAvatar: json['users']?['avatar_url']?.toString(),
       reporterPhone: json['users']?['phone']?.toString(),
       assignedOfficerId: json['assigned_officer_id']?.toString(),
+      assignedOfficerIds: officerIds,
       commentCount: count,
     );
   }

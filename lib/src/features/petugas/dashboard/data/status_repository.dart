@@ -12,7 +12,8 @@ class StatusRepository {
     required String status,
     String? note,
     String? photoUrl,
-    String? assignedOfficerId,
+    String? assignedOfficerId, // legacy
+    List<String>? assignedOfficerIds,
   }) async {
     try {
       final data = {
@@ -20,6 +21,7 @@ class StatusRepository {
         if (note != null) 'note': note,
         if (photoUrl != null) 'photo_url': photoUrl,
         if (assignedOfficerId != null) 'assigned_officer_id': assignedOfficerId,
+        if (assignedOfficerIds != null) 'assigned_officer_ids': assignedOfficerIds,
       };
 
       final response = await _apiClient.dio.patch(

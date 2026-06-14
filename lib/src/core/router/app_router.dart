@@ -15,6 +15,8 @@ import '../../features/warga/dashboard/presentation/dashboard_screen.dart';
 import '../../features/warga/report/presentation/report_detail_screen.dart';
 import '../../features/warga/report/presentation/in_app_camera_screen.dart';
 import '../../features/admin/report/presentation/admin_report_detail_screen.dart';
+import '../../features/admin/report/presentation/admin_report_comments_screen.dart';
+import '../../features/petugas/report/presentation/petugas_report_comments_screen.dart';
 import '../../features/warga/track/presentation/track_detail_screen.dart';
 import '../../features/shared/profile/presentation/edit_profile_screen.dart';
 import '../../features/shared/profile/presentation/help_center_screen.dart';
@@ -108,6 +110,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/admin/report-comments',
+        builder: (context, state) {
+          final report = state.extra as ReportModel?;
+          if (report == null) {
+            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+          }
+          return AdminReportCommentsScreen(report: report);
+        },
+      ),
+      GoRoute(
         path: '/petugas/main',
         builder: (context, state) => const PetugasMainScreen(),
       ),
@@ -119,6 +131,16 @@ final routerProvider = Provider<GoRouter>((ref) {
             return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
           }
           return PetugasReportDetailScreen(report: report);
+        },
+      ),
+      GoRoute(
+        path: '/petugas/report-comments',
+        builder: (context, state) {
+          final report = state.extra as ReportModel?;
+          if (report == null) {
+            return const Scaffold(body: Center(child: Text('Laporan tidak ditemukan.')));
+          }
+          return PetugasReportCommentsScreen(report: report);
         },
       ),
       GoRoute(

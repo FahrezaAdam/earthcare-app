@@ -69,6 +69,8 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
       await repo.addComment(widget.report!.id, text);
       _commentController.clear();
       ref.invalidate(commentsProvider(widget.report!.id));
+      ref.invalidate(reportsProvider('all'));
+      ref.invalidate(reportsProvider('me'));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Komentar ditambahkan'), backgroundColor: Colors.green),

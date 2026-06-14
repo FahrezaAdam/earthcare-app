@@ -345,6 +345,23 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      if (rawReport.commentCount >= 5) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red[100],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.local_fire_department, color: Colors.red, size: 10),
+                              SizedBox(width: 2),
+                              Text('URGENT', style: TextStyle(color: Colors.red, fontSize: 8, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 12),
