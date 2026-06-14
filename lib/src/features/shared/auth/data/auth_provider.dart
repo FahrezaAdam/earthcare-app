@@ -53,8 +53,15 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> _checkInitialAuth() async {
     final prefs = await SharedPreferences.getInstance();
+    final rememberMe = prefs.getBool('remember_me') ?? false;
     final role = prefs.getString('user_role');
     final token = prefs.getString('auth_token');
+
+    if (!rememberMe) {
+      await prefs.remove('auth_token');
+      await prefs.remove('user_role');
+      return;
+    }
 
     if (token != null && role != null) {
       state = state.copyWith(role: role);
@@ -68,7 +75,7 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<bool> login(String email, String password, {bool rememberMe = false}) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(authRepositoryProvider);
@@ -90,6 +97,7 @@ class AuthNotifier extends Notifier<AuthState> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('auth_token', token);
         await prefs.setString('user_role', role);
+        await prefs.setBool('remember_me', rememberMe);
 
         state = state.copyWith(isLoading: false, role: role, user: user);
         return true;
@@ -301,6 +309,7 @@ class AuthNotifier extends Notifier<AuthState> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('user_role');
+    await prefs.remove('remember_me');
     state = AuthState();
   }
 }

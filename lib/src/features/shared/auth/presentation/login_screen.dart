@@ -28,6 +28,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
+    // Auto-redirect jika sudah login (dari Remember Me)
+    if (authState.role != null) {
+      Future.microtask(() {
+        if (!context.mounted) return;
+        if (authState.role == 'admin') {
+          context.go('/admin/dashboard');
+        } else if (authState.role == 'petugas' || authState.role == 'officer') {
+          context.go('/petugas/main');
+        } else {
+          context.go('/dashboard');
+        }
+      });
+      return const Scaffold(
+        backgroundColor: Color(0xFF1B4332),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
@@ -323,7 +345,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                                           final success = await ref
                                               .read(authProvider.notifier)
-                                              .login(email, password);
+                                              .login(email, password, rememberMe: rememberMe);
 
                                           if (!context.mounted) return;
 
