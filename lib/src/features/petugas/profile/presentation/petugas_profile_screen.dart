@@ -170,13 +170,17 @@ class PetugasProfileScreen extends ConsumerWidget {
                       color: Colors.grey,
                     ),
                     onTap: () {
+                      final parentContext = context;
                       showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
+                        context: parentContext,
+                        builder: (BuildContext dialogContext) {
                           return AlertDialog(
                             title: const Text(
-                              'Konfirmasi Logout',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              'Konfirmasi Keluar',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1B4332),
+                              ),
                             ),
                             content: const Text(
                               'Apakah Anda yakin ingin keluar dari aplikasi?',
@@ -186,7 +190,9 @@ class PetugasProfileScreen extends ConsumerWidget {
                             ),
                             actions: [
                               TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
+                                onPressed: () {
+                                  Navigator.of(dialogContext).pop();
+                                },
                                 child: const Text(
                                   'Batal',
                                   style: TextStyle(
@@ -197,16 +203,16 @@ class PetugasProfileScreen extends ConsumerWidget {
                               ),
                               ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: Colors.red[700],
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                                 onPressed: () async {
-                                  Navigator.of(context).pop();
+                                  Navigator.of(dialogContext).pop();
                                   await ref.read(authProvider.notifier).logout();
-                                  if (context.mounted) {
-                                    context.go('/login');
+                                  if (parentContext.mounted) {
+                                    parentContext.go('/login');
                                   }
                                 },
                                 child: const Text(

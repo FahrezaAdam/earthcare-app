@@ -299,9 +299,10 @@ class ProfileScreen extends ConsumerWidget {
                     titleColor: Colors.red[700]!,
                     iconColor: Colors.red[700]!,
                     onTap: () {
+                      final parentContext = context;
                       showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
+                        context: parentContext,
+                        builder: (BuildContext dialogContext) {
                           return AlertDialog(
                             title: const Text(
                               'Konfirmasi Keluar',
@@ -319,7 +320,7 @@ class ProfileScreen extends ConsumerWidget {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop(); // Close dialog
+                                  Navigator.of(dialogContext).pop(); // Close dialog
                                 },
                                 child: const Text(
                                   'Batal',
@@ -337,12 +338,12 @@ class ProfileScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 onPressed: () async {
-                                  Navigator.of(context).pop(); // Close dialog
+                                  Navigator.of(dialogContext).pop(); // Close dialog
                                   await ref
                                       .read(authProvider.notifier)
                                       .logout(); // Clear token
-                                  if (context.mounted) {
-                                    context.go('/login'); // Perform logout
+                                  if (parentContext.mounted) {
+                                    parentContext.go('/login'); // Perform logout
                                   }
                                 },
                                 child: const Text(
