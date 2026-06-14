@@ -21,20 +21,20 @@ class PushNotificationService {
     // 2. Initialize local notifications for Foreground
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/launcher_icon');
-    
+
     // For iOS
     const DarwinInitializationSettings initializationSettingsDarwin =
         DarwinInitializationSettings(
-      requestSoundPermission: true,
-      requestBadgePermission: true,
-      requestAlertPermission: true,
-    );
+          requestSoundPermission: true,
+          requestBadgePermission: true,
+          requestAlertPermission: true,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsDarwin,
-    );
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsDarwin,
+        );
 
     await _localNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -54,7 +54,8 @@ class PushNotificationService {
 
     await _localNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(channel);
 
     // 4. Configure foreground message listener
@@ -64,19 +65,21 @@ class PushNotificationService {
 
       if (message.notification != null) {
         debugPrint(
-            'Message also contained a notification: ${message.notification?.title}');
+          'Message also contained a notification: ${message.notification?.title}',
+        );
         _showForegroundNotification(message, channel);
       }
     });
 
-    // 5. Get FCM Token (Optional, for backend)
+    // 5. Get FCM Token
     String? token = await _fcm.getToken();
-    debugPrint('FCM Token: $token');
-    // TODO: Send this token to backend if needed
+    debugPrint('FCM Token on init: $token');
   }
 
   void _showForegroundNotification(
-      RemoteMessage message, AndroidNotificationChannel channel) {
+    RemoteMessage message,
+    AndroidNotificationChannel channel,
+  ) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
 

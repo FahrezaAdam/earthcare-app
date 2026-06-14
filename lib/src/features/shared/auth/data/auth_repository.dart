@@ -190,6 +190,7 @@ class AuthRepository {
     String? name,
     String? phone,
     String? avatarUrl,
+    String? fcmToken,
   }) async {
     try {
       final response = await _apiClient.dio.put(
@@ -198,6 +199,7 @@ class AuthRepository {
           'name': ?name,
           'phone': ?phone,
           'avatar_url': ?avatarUrl,
+          'fcm_token': ?fcmToken,
         },
       );
       if (response.statusCode == 200) {

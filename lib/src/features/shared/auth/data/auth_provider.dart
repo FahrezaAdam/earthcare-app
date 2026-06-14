@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'auth_repository.dart';
 
 class AuthState {
@@ -100,6 +101,18 @@ class AuthNotifier extends Notifier<AuthState> {
         await prefs.setBool('remember_me', rememberMe);
 
         state = state.copyWith(isLoading: false, role: role, user: user);
+
+        // Update FCM Token to backend
+        try {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          if (fcmToken != null) {
+            await repository.updateProfile(fcmToken: fcmToken);
+            debugPrint('Successfully sent FCM Token to backend: $fcmToken');
+          }
+        } catch (e) {
+          debugPrint('Failed to send FCM token to backend: $e');
+        }
+
         return true;
       } else {
         state = state.copyWith(
