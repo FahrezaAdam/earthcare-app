@@ -72,8 +72,12 @@ class PushNotificationService {
     });
 
     // 5. Get FCM Token
-    String? token = await _fcm.getToken();
-    debugPrint('FCM Token on init: $token');
+    try {
+      String? token = await _fcm.getToken();
+      debugPrint('FCM Token on init: $token');
+    } catch (e) {
+      debugPrint('Failed to get FCM token during init: $e');
+    }
   }
 
   void _showForegroundNotification(
