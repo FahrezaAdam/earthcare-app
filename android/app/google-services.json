@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "446584745622",
+    "project_id": "earthcare-51d1a",
+    "storage_bucket": "earthcare-51d1a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:446584745622:android:dafe8e69c90795e05cdcb7",
+        "android_client_info": {
+          "package_name": "com.example.earth_care"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDS0VNwsZbsztf2fGZBfcHMFvQJbzAbIkw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
