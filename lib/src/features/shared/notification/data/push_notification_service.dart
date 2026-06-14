@@ -37,7 +37,7 @@ class PushNotificationService {
     );
 
     await _localNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (details) {
         // Handle when a foreground notification is tapped
         debugPrint('Notification tapped: ${details.payload}');
@@ -82,10 +82,10 @@ class PushNotificationService {
 
     if (notification != null && android != null) {
       _localNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             channel.id,
             channel.name,
