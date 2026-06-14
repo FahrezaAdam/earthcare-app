@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../warga/report/data/upload_repository.dart';
 import 'package:image/image.dart' as img;
 import 'package:intl/intl.dart';
+import '../../../shared/widgets/full_screen_image_viewer.dart';
 
 class PetugasReportDetailScreen extends ConsumerStatefulWidget {
   final ReportModel report;
@@ -534,19 +535,29 @@ class _PetugasReportDetailScreenState
                 ),
                 const SizedBox(height: 12),
                 if (r.imageUrl.isNotEmpty)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      r.imageUrl,
-                      width: double.infinity,
-                      height: 200,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenImageViewer(imageUrl: r.imageUrl),
+                        ),
+                      );
+                    },
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        r.imageUrl,
+                        width: double.infinity,
                         height: 200,
-                        color: Colors.grey[200],
-                        child: const Icon(
-                          Icons.broken_image,
-                          color: Colors.grey,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 200,
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.broken_image,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     ),
@@ -702,13 +713,23 @@ class _PetugasReportDetailScreenState
                           ],
                           if (h['photo_url'] != null) ...[
                             const SizedBox(height: 12),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                h['photo_url'],
-                                width: double.infinity,
-                                height: 200,
-                                fit: BoxFit.cover,
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => FullScreenImageViewer(imageUrl: h['photo_url']),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  h['photo_url'],
+                                  width: double.infinity,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                             ),
                           ],

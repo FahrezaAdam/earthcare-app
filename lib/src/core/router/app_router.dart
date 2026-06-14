@@ -67,7 +67,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/camera',
-        builder: (context, state) => const InAppCameraScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return InAppCameraScreen(
+            isProfileMode: extra?['isProfileMode'] as bool? ?? false,
+          );
+        },
       ),
       GoRoute(
         path: '/track-detail',

@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img_pkg;
+import 'package:intl/intl.dart';
 
 class InAppCameraScreen extends StatefulWidget {
-  const InAppCameraScreen({super.key});
+  final bool isProfileMode;
+  const InAppCameraScreen({super.key, this.isProfileMode = false});
 
   @override
   State<InAppCameraScreen> createState() => _InAppCameraScreenState();
@@ -19,6 +23,7 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
   int _selectedCameraIndex = 0;
   Position? _currentPosition;
   String _currentTime = '';
+  String _address = 'Mencari lokasi...';
 
   @override
   void initState() {
@@ -59,6 +64,24 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       setState(() {
         _currentPosition = position;
       });
+      _fetchAddress(position.latitude, position.longitude);
+    }
+  }
+
+  Future<void> _fetchAddress(double lat, double lng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        final addr = '${place.street ?? place.name}, ${place.subLocality ?? place.locality}, ${place.administrativeArea}';
+        if (mounted) {
+          setState(() {
+            _address = addr;
+          });
+        }
+      }
+    } catch (e) {
+      // Ignored
     }
   }
 
@@ -80,7 +103,6 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
   }
 
   Future<void> _setupCameraController(CameraDescription camera) async {
-    final prevController = _controller;
     final newController = CameraController(
       camera,
       ResolutionPreset.high,
@@ -92,28 +114,63 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       await newController.initialize();
     } catch (e) {
       debugPrint('Error initializing camera controller: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Kamera gagal dibuka: $e')),
+        );
+      }
     }
 
     if (mounted) {
       setState(() {});
     }
-
-    if (prevController != null) {
-      await prevController.dispose();
-    }
   }
 
   Future<void> _switchCamera() async {
     if (_cameras.isEmpty || _cameras.length == 1) return;
-    _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
-    setState(() {
-      _isInitializing = true;
-    });
-    await _setupCameraController(_cameras[_selectedCameraIndex]);
-    if (mounted) {
+    if (_controller == null) return;
+    
+    final nextIndex = (_selectedCameraIndex + 1) % _cameras.length;
+    final newCamera = _cameras[nextIndex];
+    
+    try {
+      // Switch the active lens without dropping the CameraPreview widget
+      await _controller!.setDescription(newCamera);
       setState(() {
-        _isInitializing = false;
+        _selectedCameraIndex = nextIndex;
       });
+    } catch (e) {
+      debugPrint('Error using setDescription: $e');
+      // If setDescription fails, fallback to recreating the controller
+      setState(() {
+        _isInitializing = true;
+      });
+      
+      try {
+        await _controller!.dispose();
+      } catch (_) {}
+      
+      final fallbackController = CameraController(
+        newCamera,
+        ResolutionPreset.medium, // Use medium to avoid hardware limits on front camera
+        enableAudio: false,
+      );
+      
+      try {
+        await fallbackController.initialize();
+        _controller = fallbackController;
+        setState(() {
+          _selectedCameraIndex = nextIndex;
+        });
+      } catch (err) {
+        debugPrint('Fallback init failed: $err');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
     }
   }
 
@@ -131,22 +188,64 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
       // Process image to add timestamp
       final File file = File(picture.path);
       final bytes = await file.readAsBytes();
-      final decodedImage = img_pkg.decodeImage(bytes);
+      img_pkg.Image? decodedImage = img_pkg.decodeImage(bytes);
       
       if (decodedImage != null) {
-        final locText = _currentPosition != null 
-            ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' 
-            : 'Unknown';
-        final text = 'EarthCare Evidence\nTime: $_currentTime WIB\nGPS: $locText';
-        
-        img_pkg.drawString(
-          decodedImage,
-          text,
-          font: img_pkg.arial48,
-          x: 40,
-          y: decodedImage.height - 220,
-          color: img_pkg.ColorRgb8(255, 255, 255),
-        );
+        // Bake EXIF orientation so portrait photos don't mess up text rendering
+        decodedImage = img_pkg.bakeOrientation(decodedImage);
+
+        // Resize image to ensure watermark is proportional
+        if (decodedImage.width > 1200) {
+          decodedImage = img_pkg.copyResize(decodedImage, width: 1200);
+        }
+
+        if (!widget.isProfileMode) {
+          final timestamp = DateFormat('dd MMM yyyy HH:mm:ss').format(DateTime.now());
+          final coordsText = _currentPosition != null 
+              ? '${_currentPosition!.latitude}, ${_currentPosition!.longitude}' 
+              : '0, 0';
+          
+          // Draw semi-transparent black background
+          img_pkg.fillRect(
+            decodedImage,
+            x1: 0,
+            y1: decodedImage.height - 130,
+            x2: decodedImage.width,
+            y2: decodedImage.height,
+            color: img_pkg.ColorRgb8(0, 0, 0),
+          );
+
+          // Draw Timestamp
+          img_pkg.drawString(
+            decodedImage,
+            'WAKTU    : $timestamp',
+            font: img_pkg.arial24,
+            x: 20,
+            y: decodedImage.height - 115,
+            color: img_pkg.ColorRgb8(255, 255, 255),
+          );
+          
+          // Draw Coordinates
+          img_pkg.drawString(
+            decodedImage,
+            'KOORDINAT: $coordsText',
+            font: img_pkg.arial24,
+            x: 20,
+            y: decodedImage.height - 80,
+            color: img_pkg.ColorRgb8(255, 255, 255),
+          );
+          
+          // Draw Location
+          final displayAddress = _address.length > 50 ? '${_address.substring(0, 50)}...' : _address;
+          img_pkg.drawString(
+            decodedImage,
+            'LOKASI   : $displayAddress',
+            font: img_pkg.arial24,
+            x: 20,
+            y: decodedImage.height - 45,
+            color: img_pkg.ColorRgb8(255, 255, 255),
+          );
+        }
         
         final outBytes = img_pkg.encodeJpg(decodedImage, quality: 90);
         await file.writeAsBytes(outBytes);
@@ -214,52 +313,53 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
           Positioned.fill(child: CameraPreview(_controller!)),
 
           // Cyber/Futuristic Overlay Box
-          Positioned(
-            left: 24,
-            bottom: 140,
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.greenAccent,
-                        size: 12,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'EVIDENCE VALIDATED',
-                        style: TextStyle(
+          if (!widget.isProfileMode)
+            Positioned(
+              left: 24,
+              bottom: 140,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
                           color: Colors.greenAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                          letterSpacing: 1.2,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.8),
-                              blurRadius: 2,
-                            ),
-                          ],
+                          size: 12,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  _buildOverlayText('GPS: ${_currentPosition != null ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' : 'Mencari lokasi...'}'),
-                  _buildOverlayText('Time: $_currentTime WIB'),
-                  _buildOverlayText('Accuracy: ${_currentPosition != null ? '${_currentPosition!.accuracy.toStringAsFixed(1)}m' : '...'} | Report ID: AUTO'),
-                ],
+                        const SizedBox(width: 6),
+                        Text(
+                          'EVIDENCE VALIDATED',
+                          style: TextStyle(
+                            color: Colors.greenAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 10,
+                            letterSpacing: 1.2,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.8),
+                                blurRadius: 2,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    _buildOverlayText('GPS: ${_currentPosition != null ? '${_currentPosition!.latitude.toStringAsFixed(4)}, ${_currentPosition!.longitude.toStringAsFixed(4)}' : 'Mencari lokasi...'}'),
+                    _buildOverlayText('Time: $_currentTime WIB'),
+                    _buildOverlayText('Accuracy: ${_currentPosition != null ? '${_currentPosition!.accuracy.toStringAsFixed(1)}m' : '...'} | Report ID: AUTO'),
+                  ],
+                ),
               ),
             ),
-          ),
 
           // Top Header (EarthCare & Flash)
           SafeArea(
@@ -311,23 +411,8 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Gallery / Placeholder
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.5),
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.photo_library,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
+                // Empty spacer to keep shutter centered
+                const SizedBox(width: 48, height: 48),
 
                 // Shutter Button
                 GestureDetector(
@@ -353,23 +438,26 @@ class _InAppCameraScreenState extends State<InAppCameraScreen> {
                   ),
                 ),
 
-                // Flip Camera Button
-                GestureDetector(
-                  onTap: _switchCamera,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
+                // Flip Camera Button (only for profile mode)
+                if (widget.isProfileMode)
+                  GestureDetector(
+                    onTap: _switchCamera,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.flip_camera_ios,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.flip_camera_ios,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
+                  )
+                else
+                  const SizedBox(width: 48, height: 48), // Empty spacer to keep shutter centered
               ],
             ),
           ),

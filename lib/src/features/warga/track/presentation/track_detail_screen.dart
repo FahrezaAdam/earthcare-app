@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../report/data/report_model.dart';
+import '../../../shared/widgets/full_screen_image_viewer.dart';
 import '../../report/data/report_provider.dart';
 import '../../report/data/report_repository.dart';
 import '../../../shared/auth/data/auth_provider.dart';
 import '../../../petugas/dashboard/data/status_repository.dart'; // To get status history
+import '../data/comment_provider.dart';
 
 class TrackDetailScreen extends ConsumerStatefulWidget {
   final String title;
@@ -28,6 +30,8 @@ class TrackDetailScreen extends ConsumerStatefulWidget {
 class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
   List<dynamic> _history = [];
   bool _isLoadingHistory = false;
+  final TextEditingController _commentController = TextEditingController();
+  bool _isSubmittingComment = false;
 
   @override
   void initState() {
@@ -46,6 +50,38 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
       debugPrint('Error loading history: $e');
     } finally {
       if (mounted) setState(() => _isLoadingHistory = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitComment() async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty || widget.report == null) return;
+
+    setState(() => _isSubmittingComment = true);
+    try {
+      final repo = ref.read(commentRepositoryProvider);
+      await repo.addComment(widget.report!.id, text);
+      _commentController.clear();
+      ref.invalidate(commentsProvider(widget.report!.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Komentar ditambahkan'), backgroundColor: Colors.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengirim: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmittingComment = false);
     }
   }
 
@@ -231,17 +267,27 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
                         ],
                       ),
                     ),
-                    ClipRRect(
-                      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
-                      child: Image.network(
-                        widget.report!.imageUrl,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenImageViewer(imageUrl: widget.report!.imageUrl),
+                          ),
+                        );
+                      },
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
+                        child: Image.network(
+                          widget.report!.imageUrl,
+                          width: double.infinity,
                           height: 200,
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 200,
+                            color: Colors.grey[200],
+                            child: const Icon(Icons.broken_image, color: Colors.grey),
+                          ),
                         ),
                       ),
                     ),
@@ -260,6 +306,114 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
               ),
               const SizedBox(height: 16),
               ..._buildDynamicTimeline(),
+            ],
+            
+            if (widget.report != null) ...[
+              const SizedBox(height: 32),
+              const Divider(),
+              const SizedBox(height: 16),
+              const Text('Diskusi Komunitas', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 4),
+              Text('Semua pengguna dapat berdiskusi mengenai laporan ini.', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              const SizedBox(height: 16),
+              
+              // Comments List
+              Consumer(
+                builder: (context, ref, child) {
+                  final commentsAsync = ref.watch(commentsProvider(widget.report!.id));
+                  return commentsAsync.when(
+                    data: (comments) {
+                      if (comments.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(child: Text('Belum ada komentar.', style: TextStyle(color: Colors.grey[500]))),
+                        );
+                      }
+                      return ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: comments.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          final c = comments[index];
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: const Color(0xFF1B4332).withOpacity(0.2),
+                                backgroundImage: c.userAvatar != null ? NetworkImage(c.userAvatar!) : null,
+                                child: c.userAvatar == null ? const Icon(Icons.person, size: 16, color: Color(0xFF1B4332)) : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                          Text(_formatTime(c.createdAt), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(c.content, style: const TextStyle(fontSize: 13)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (e, st) => Text('Gagal memuat: $e', style: const TextStyle(color: Colors.red)),
+                  );
+                },
+              ),
+              
+              const SizedBox(height: 24),
+              // Comment Input Field
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        hintText: 'Tambahkan komentar...',
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      maxLines: null,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => _submitComment(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _isSubmittingComment
+                      ? const Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                        )
+                      : IconButton(
+                          icon: const Icon(Icons.send, color: Color(0xFF1B4332)),
+                          onPressed: _submitComment,
+                        ),
+                ],
+              ),
             ],
 
           ],
@@ -386,17 +540,27 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
                           Text(description, style: TextStyle(fontSize: 13, color: isActive ? Colors.black87 : Colors.grey)),
                           const SizedBox(height: 12),
                           if (imageUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: Image.network(
-                                imageUrl,
-                                height: 160,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => FullScreenImageViewer(imageUrl: imageUrl),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  imageUrl,
                                   height: 160,
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.broken_image, color: Colors.grey),
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    height: 160,
+                                    color: Colors.grey[200],
+                                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                                  ),
                                 ),
                               ),
                             ),

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -104,9 +105,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ListTile(
                 leading: const Icon(Icons.camera_alt),
                 title: const Text('Ambil dari Kamera'),
-                onTap: () {
+                onTap: () async {
                   context.pop();
-                  _pickImage(ImageSource.camera);
+                  final result = await context.push<String>('/camera', extra: {'isProfileMode': true});
+                  if (result != null) {
+                    final bytes = await File(result).readAsBytes();
+                    setState(() {
+                      _selectedImageBytes = bytes;
+                      _selectedImageName = result.split('/').last;
+                    });
+                  }
                 },
               ),
             ],
