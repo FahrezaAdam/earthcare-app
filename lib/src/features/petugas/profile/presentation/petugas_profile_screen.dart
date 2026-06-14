@@ -202,10 +202,12 @@ class PetugasProfileScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.of(context).pop();
-                                  ref.read(authProvider.notifier).logout();
-                                  context.go('/login');
+                                  await ref.read(authProvider.notifier).logout();
+                                  if (context.mounted) {
+                                    context.go('/login');
+                                  }
                                 },
                                 child: const Text(
                                   'Keluar',

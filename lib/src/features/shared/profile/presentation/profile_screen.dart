@@ -336,12 +336,14 @@ class ProfileScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
-                                onPressed: () {
+                                onPressed: () async {
                                   Navigator.of(context).pop(); // Close dialog
-                                  ref
+                                  await ref
                                       .read(authProvider.notifier)
                                       .logout(); // Clear token
-                                  context.go('/login'); // Perform logout
+                                  if (context.mounted) {
+                                    context.go('/login'); // Perform logout
+                                  }
                                 },
                                 child: const Text(
                                   'Keluar',
