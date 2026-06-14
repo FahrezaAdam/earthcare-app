@@ -76,7 +76,11 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<bool> login(String email, String password, {bool rememberMe = false}) async {
+  Future<bool> login(
+    String email,
+    String password, {
+    bool rememberMe = false,
+  }) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final repository = ref.read(authRepositoryProvider);
