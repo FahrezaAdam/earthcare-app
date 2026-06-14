@@ -425,10 +425,20 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                           ),
                         ],
                       ),
-                      if (rawReport.status == 'received' &&
-                          (_filter == 'me' ||
-                              rawReport.userId == currentUserId))
-                        InkWell(
+                      Row(
+                        children: [
+                          Icon(Icons.chat_bubble_outline, size: 16, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            rawReport.commentCount > 0 
+                                ? 'Diskusi (${rawReport.commentCount})' 
+                                : 'Diskusi', 
+                            style: TextStyle(color: Colors.grey[600], fontSize: 11, fontWeight: FontWeight.bold)
+                          ),
+                          const SizedBox(width: 12),
+                          if (rawReport.status == 'received' &&
+                              (_filter == 'me' || rawReport.userId == currentUserId))
+                            InkWell(
                           onTap: () async {
                             final confirm = await showDialog<bool>(
                               context: context,
@@ -507,8 +517,10 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            ),
                           ),
-                        ),
+                        ],
+                      ),
                     ],
                   ),
                 ],

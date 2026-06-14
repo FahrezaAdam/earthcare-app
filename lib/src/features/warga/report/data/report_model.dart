@@ -17,6 +17,7 @@ class ReportModel {
   final String? reporterAvatar;
   final String? reporterPhone;
   final String? assignedOfficerId;
+  final int commentCount;
 
   ReportModel({
     required this.id,
@@ -36,12 +37,20 @@ class ReportModel {
     this.reporterAvatar,
     this.reporterPhone,
     this.assignedOfficerId,
+    this.commentCount = 0,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     // Map status from API to isCompleted
     final apiStatus = json['status']?.toString().toLowerCase() ?? 'received';
     final completed = apiStatus == 'resolved';
+    
+    int count = 0;
+    if (json['report_comments'] is List && (json['report_comments'] as List).isNotEmpty) {
+      count = json['report_comments'][0]['count'] as int? ?? 0;
+    } else if (json['commentCount'] != null) {
+      count = json['commentCount'] as int;
+    }
 
     return ReportModel(
       id: json['id']?.toString() ?? '',
@@ -76,6 +85,7 @@ class ReportModel {
       reporterAvatar: json['users']?['avatar_url']?.toString(),
       reporterPhone: json['users']?['phone']?.toString(),
       assignedOfficerId: json['assigned_officer_id']?.toString(),
+      commentCount: count,
     );
   }
 

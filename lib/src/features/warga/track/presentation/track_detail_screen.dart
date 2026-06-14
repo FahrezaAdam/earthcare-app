@@ -359,7 +359,27 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
                                       Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                          Row(
+                                            children: [
+                                              Text(c.userName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                              const SizedBox(width: 6),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: c.userRole == 'admin' ? Colors.red[100] : (c.userRole == 'petugas' ? Colors.blue[100] : Colors.green[100]),
+                                                  borderRadius: BorderRadius.circular(4),
+                                                ),
+                                                child: Text(
+                                                  c.userRole.toUpperCase(),
+                                                  style: TextStyle(
+                                                    fontSize: 8,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: c.userRole == 'admin' ? Colors.red[800] : (c.userRole == 'petugas' ? Colors.blue[800] : Colors.green[800]),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                           Text(_formatTime(c.createdAt), style: const TextStyle(fontSize: 10, color: Colors.grey)),
                                         ],
                                       ),

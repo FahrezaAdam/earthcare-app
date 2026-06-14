@@ -16,7 +16,7 @@ class CommentModel {
   });
 
   factory CommentModel.fromJson(Map<String, dynamic> json) {
-    final user = json['user'] as Map<String, dynamic>? ?? {};
+    final user = (json['user'] ?? json['users']) as Map<String, dynamic>? ?? {};
     return CommentModel(
       id: json['id'] as String,
       content: json['content'] as String,

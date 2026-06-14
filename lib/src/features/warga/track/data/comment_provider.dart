@@ -8,7 +8,10 @@ final commentRepositoryProvider = Provider<CommentRepository>((ref) {
   return CommentRepository(apiClient);
 });
 
-final commentsProvider = FutureProvider.family<List<CommentModel>, String>((ref, reportId) async {
+final commentsProvider = FutureProvider.family<List<CommentModel>, String>((
+  ref,
+  reportId,
+) async {
   final repo = ref.watch(commentRepositoryProvider);
   return repo.getComments(reportId);
 });

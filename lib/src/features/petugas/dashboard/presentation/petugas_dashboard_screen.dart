@@ -70,10 +70,13 @@ class PetugasDashboardScreen extends ConsumerWidget {
             Expanded(
               child: reportsAsyncValue.when(
                 data: (reports) {
-                  // Filter for this officer
-                  final myReports = reports.where((r) => r.assignedOfficerId == userId).toList();
+                  // Filter for this officer AND unassigned new reports
+                  final myReports = reports.where((r) => 
+                    r.assignedOfficerId == userId || 
+                    (r.assignedOfficerId == null && r.status.toLowerCase() == 'received')
+                  ).toList();
 
-                  final baruReports = myReports.where((r) => r.status.toLowerCase() == 'assigned').toList();
+                  final baruReports = myReports.where((r) => r.status.toLowerCase() == 'assigned' || r.status.toLowerCase() == 'received').toList();
                   final berjalanReports = myReports.where((r) => r.status.toLowerCase() == 'in_progress').toList();
                   final selesaiReports = myReports.where((r) => r.status.toLowerCase() == 'resolved').toList();
 
