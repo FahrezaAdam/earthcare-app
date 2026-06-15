@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/shared/auth/data/auth_provider.dart';
 import '../../features/warga/report/data/report_model.dart';
 
 import '../../features/shared/auth/presentation/login_screen.dart';
@@ -29,8 +30,34 @@ import '../../features/admin/petugas/presentation/admin_petugas_profile_screen.d
 import '../../features/admin/petugas/data/officer_model.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authProvider);
+
   return GoRouter(
     initialLocation: '/login',
+    redirect: (context, state) {
+      final isAuth = authState.role != null;
+      final isGoingToLogin = state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/verify' ||
+          state.matchedLocation == '/verify-reset' ||
+          state.matchedLocation == '/new-password' ||
+          state.matchedLocation == '/success-reset';
+
+      if (!isAuth && !isGoingToLogin) {
+        return '/login';
+      }
+
+      if (isAuth && isGoingToLogin) {
+        if (authState.role == 'admin') return '/admin/dashboard';
+        if (authState.role == 'petugas' || authState.role == 'officer') {
+          return '/petugas/main';
+        }
+        return '/dashboard';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(

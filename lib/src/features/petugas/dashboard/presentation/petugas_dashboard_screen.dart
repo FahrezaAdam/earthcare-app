@@ -85,13 +85,14 @@ class PetugasDashboardScreen extends ConsumerWidget {
 
                   return TabBarView(
                     children: [
-                      _buildReportList(context, myReports, 'Semua'),
+                      _buildReportList(context, ref, myReports, 'Semua'),
                       _buildReportList(
                         context,
+                        ref,
                         berjalanReports,
                         'Sedang Berjalan',
                       ),
-                      _buildReportList(context, selesaiReports, 'Selesai'),
+                      _buildReportList(context, ref, selesaiReports, 'Selesai'),
                     ],
                   );
                 },
@@ -107,6 +108,7 @@ class PetugasDashboardScreen extends ConsumerWidget {
 
   Widget _buildReportList(
     BuildContext context,
+    WidgetRef ref,
     List<ReportModel> reports,
     String tabType,
   ) {
@@ -119,14 +121,23 @@ class PetugasDashboardScreen extends ConsumerWidget {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.all(20),
-      itemCount: reports.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16),
-      itemBuilder: (context, index) {
-        final report = reports[index];
-        return _buildTaskCard(context, report, tabType);
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(reportsProvider('all'));
+        try {
+          await ref.read(reportsProvider('all').future);
+        } catch (_) {}
       },
+      color: const Color(0xFF1B4332),
+      child: ListView.separated(
+        padding: const EdgeInsets.all(20),
+        itemCount: reports.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
+          final report = reports[index];
+          return _buildTaskCard(context, report, tabType);
+        },
+      ),
     );
   }
 

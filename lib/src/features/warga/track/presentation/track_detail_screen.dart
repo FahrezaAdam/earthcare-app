@@ -105,6 +105,8 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
     final report = widget.report;
     if (report == null) return items;
 
+    final isRejected = report.status.toLowerCase() == 'rejected';
+
     // 1. Diterima
     final receivedHist = _history
         .where((h) => h['status'] == 'received')
@@ -138,7 +140,7 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
               'Admin memvalidasi keaslian laporan.',
         ),
       );
-    } else if (report.status.toLowerCase() == 'received') {
+    } else if (!isRejected && report.status.toLowerCase() == 'received') {
       items.add(
         _buildTimelineItem(
           icon: Icons.verified_user,
@@ -165,7 +167,7 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
               assignedHist.last['note'] ?? 'Laporan diteruskan ke petugas.',
         ),
       );
-    } else if (['received', 'verified'].contains(report.status.toLowerCase())) {
+    } else if (!isRejected && ['received', 'verified'].contains(report.status.toLowerCase())) {
       items.add(
         _buildTimelineItem(
           icon: Icons.assignment_ind,
@@ -199,7 +201,7 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
           ),
         );
       }
-    } else if ([
+    } else if (!isRejected && [
       'received',
       'verified',
       'assigned',
@@ -232,11 +234,11 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
                 h['note'] ?? 'Laporan telah ditangani dan dinyatakan selesai.',
             hasImage: h['photo_url'] != null,
             imageUrl: h['photo_url'],
-            isLast: true,
+            isLast: !isRejected,
           ),
         );
       }
-    } else {
+    } else if (!isRejected) {
       items.add(
         _buildTimelineItem(
           icon: Icons.check_circle_outline,
@@ -244,6 +246,24 @@ class _TrackDetailScreenState extends ConsumerState<TrackDetailScreen> {
           title: 'Selesai',
           time: '',
           description: 'Laporan akan ditutup setelah pengerjaan selesai.',
+          isLast: true,
+        ),
+      );
+    }
+
+    // 6. Ditolak
+    final rejectedHist = _history
+        .where((h) => h['status'] == 'rejected')
+        .toList();
+    if (rejectedHist.isNotEmpty) {
+      items.add(
+        _buildTimelineItem(
+          icon: Icons.cancel,
+          isActive: true,
+          title: 'Ditolak',
+          time: _formatTime(rejectedHist.last['created_at']),
+          description:
+              rejectedHist.last['note'] ?? 'Laporan ini telah ditolak karena tidak memenuhi kriteria atau di luar yurisdiksi.',
           isLast: true,
         ),
       );

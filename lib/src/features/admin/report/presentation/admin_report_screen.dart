@@ -123,9 +123,17 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
             return matchesUrgency && matchesStatus && matchesCategory;
           }).toList();
 
-          return CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(reportsProvider('all'));
+              try {
+                await ref.read(reportsProvider('all').future);
+              } catch (_) {}
+            },
+            color: const Color(0xFF1B4332),
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -343,7 +351,8 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 30)),
             ],
-          );
+          ),
+        );
         },
         loading: () => const Center(
           child: CircularProgressIndicator(color: Color(0xFF1B4332)),
@@ -470,6 +479,11 @@ class _AdminReportScreenState extends ConsumerState<AdminReportScreen> {
       case 'resolved':
         tagColor = Colors.green;
         tagText = 'SELESAI';
+        buttonText = 'Lihat Detail';
+        break;
+      case 'rejected':
+        tagColor = Colors.red;
+        tagText = 'DITOLAK';
         buttonText = 'Lihat Detail';
         break;
       default:

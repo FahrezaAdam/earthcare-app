@@ -106,31 +106,38 @@ class NotificationScreen extends ConsumerWidget {
           if (notifications.isEmpty) {
             return const Center(child: Text('Tidak ada notifikasi.'));
           }
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            itemCount: notifications.length,
-            itemBuilder: (context, index) {
-              final notif = notifications[index];
-              final style = _getNotifStyle(notif.title, notif.body);
-
-              // Simple grouping mock based on index for visual fidelity to screenshot
-              // In production, you would parse createdAt and compare dates
-              Widget? header;
-              if (index == 0) {
-                header = _buildHeader('HARI INI');
-              } else if (index == 3 && notifications.length > 3) {
-                header = _buildHeader('KEMARIN');
-              }
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ?header,
-                  _buildNotificationCard(context, ref, notif, style),
-                  const SizedBox(height: 16),
-                ],
-              );
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(notificationsProvider);
+              try {
+                await ref.read(notificationsProvider.future);
+              } catch (_) {}
             },
+            color: const Color(0xFF1B4332),
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notif = notifications[index];
+                final style = _getNotifStyle(notif.title, notif.body);
+
+                Widget? header;
+                if (index == 0) {
+                  header = _buildHeader('HARI INI');
+                } else if (index == 3 && notifications.length > 3) {
+                  header = _buildHeader('KEMARIN');
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ?header,
+                    _buildNotificationCard(context, ref, notif, style),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            ),
           );
         },
         loading: () => const Center(
@@ -368,8 +375,20 @@ class NotificationScreen extends ConsumerWidget {
 
   String _formatMockTime(String? date) {
     if (date == null) return 'Baru saja';
-    // Dummy parse
-    return '10 mnt';
+    try {
+      final parsed = DateTime.parse(date).toLocal();
+      final now = DateTime.now();
+      final diff = now.difference(parsed);
+
+      if (diff.inMinutes < 1) return 'Baru saja';
+      if (diff.inHours < 1) return '${diff.inMinutes} mnt';
+      if (diff.inDays < 1) return '${diff.inHours} jam';
+      if (diff.inDays < 7) return '${diff.inDays} hari';
+      
+      return '${parsed.day}/${parsed.month}/${parsed.year}';
+    } catch (e) {
+      return 'Baru saja';
+    }
   }
 
   String _extractStatus(String body) {

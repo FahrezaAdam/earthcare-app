@@ -10,6 +10,7 @@ import '../../../warga/report/data/report_provider.dart';
 import '../../../petugas/dashboard/data/status_repository.dart';
 import '../../petugas/data/officer_provider.dart';
 import '../../petugas/data/officer_model.dart';
+import '../../../../core/utils/app_dialogs.dart';
 import '../../../shared/widgets/full_screen_image_viewer.dart';
 import 'package:intl/intl.dart';
 
@@ -31,6 +32,13 @@ class _AdminReportDetailScreenState
   List<dynamic> _history = [];
   bool _isLoadingHistory = false;
   final MapController _mapController = MapController();
+  final TextEditingController _rejectNoteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _rejectNoteController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -518,12 +526,34 @@ class _AdminReportDetailScreenState
                       subtitle: 'Tim investigasi dikirim',
                       value: 'verified',
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildRadioOption(
-                      title: 'Ditolak',
-                      subtitle: 'Duplikat atau di luar yurisdiksi',
+                      title: 'Tolak',
+                      subtitle: 'Laporan tidak valid',
                       value: 'rejected',
                     ),
+                    if (_selectedStatus == 'rejected') ...[
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _rejectNoteController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Alasan penolakan (wajib diisi)',
+                          hintStyle: const TextStyle(color: Colors.white54),
+                          filled: true,
+                          fillColor: Colors.white.withValues(alpha: 0.1),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 12,
+                          ),
+                        ),
+                        maxLines: 2,
+                      ),
+                    ],
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
@@ -824,6 +854,11 @@ class _AdminReportDetailScreenState
   Future<void> _submitStatusUpdate() async {
     if (_selectedStatus == null) return;
 
+    if (_selectedStatus == 'rejected' && _rejectNoteController.text.trim().isEmpty) {
+      AppDialogs.showErrorDialog(context, 'Alasan penolakan wajib diisi agar pelapor mengetahui alasannya.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -833,6 +868,9 @@ class _AdminReportDetailScreenState
       await repo.updateStatus(
         reportId: widget.report.id,
         status: _selectedStatus!,
+        note: _selectedStatus == 'rejected' && _rejectNoteController.text.isNotEmpty
+            ? 'Alasan Ditolak: ${_rejectNoteController.text}'
+            : null,
       );
 
       // Refresh the list
@@ -851,12 +889,7 @@ class _AdminReportDetailScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Gagal memperbarui status: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        AppDialogs.showErrorDialog(context, 'Gagal memperbarui status: $e');
       }
     } finally {
       if (mounted) {

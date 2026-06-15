@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../data/officer_model.dart';
 import '../data/officer_provider.dart';
+import '../../../../core/utils/app_dialogs.dart';
 
 class AdminAddPetugasScreen extends ConsumerStatefulWidget {
   final Officer? officer;
@@ -52,17 +53,12 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
   }
 
   Future<void> _saveOfficer() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      AppDialogs.showErrorDialog(context, 'Harap isi semua kolom wajib dengan benar');
+      return;
+    }
     if (_selectedSector == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Silakan pilih sektor pengawasan',
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppDialogs.showErrorDialog(context, 'Silakan pilih sektor pengawasan');
       return;
     }
 
@@ -110,9 +106,7 @@ class _AdminAddPetugasScreenState extends ConsumerState<AdminAddPetugasScreen> {
       if (mounted) context.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
-      );
+      AppDialogs.showErrorDialog(context, e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

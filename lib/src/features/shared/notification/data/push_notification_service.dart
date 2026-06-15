@@ -58,6 +58,14 @@ class PushNotificationService {
         >()
         ?.createNotificationChannel(channel);
 
+    // Set foreground notification options for iOS
+    await FirebaseMessaging.instance
+        .setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
     // 4. Configure foreground message listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       debugPrint('Got a message whilst in the foreground!');

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../data/auth_provider.dart';
+import '../../../../core/utils/app_dialogs.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -26,8 +27,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
+  Future<void> _submitLogin() async {
+    final authState = ref.read(authProvider);
+    if (authState.isLoading) return;
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      AppDialogs.showErrorDialog(context, 'Email dan kata sandi harus diisi');
+      return;
+    }
+
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(email, password, rememberMe: rememberMe);
+
+    if (!mounted) return;
+
+    if (success) {
+      final role = ref.read(authProvider).role;
+      if (role == 'admin') {
+        context.go('/admin/dashboard');
+      } else if (role == 'petugas' || role == 'officer') {
+        context.go('/petugas/main');
+      } else {
+        context.go('/dashboard'); // Warga
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider, (previous, next) {
+      if (previous?.error == null && next.error != null) {
+        debugPrint('REF.LISTEN LOGIN FAILED: ${next.error}');
+        
+        AppDialogs.showErrorDialog(context, next.error!);
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error!),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    });
+
     final authState = ref.watch(authProvider);
 
     // Auto-redirect jika sudah login (dari Remember Me)
@@ -178,6 +226,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   borderSide: BorderSide.none,
                                 ),
                               ),
+                              onSubmitted: (_) => _submitLogin(),
                             ),
                             const SizedBox(height: 20),
 
@@ -223,6 +272,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   borderSide: BorderSide.none,
                                 ),
                               ),
+                              onSubmitted: (_) => _submitLogin(),
                             ),
                             const SizedBox(height: 12),
                             // Remember Me & Forgot Password
@@ -296,113 +346,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   ),
                                   onPressed: authState.isLoading
                                       ? null
-                                      : () async {
-                                          final email = _emailController.text
-                                              .trim();
-                                          final password =
-                                              _passwordController.text;
-
-                                          if (email.isEmpty ||
-                                              password.isEmpty) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Row(
-                                                  children: const [
-                                                    Icon(
-                                                      Icons.error_outline,
-                                                      color: Colors.white,
-                                                    ),
-                                                    SizedBox(width: 12),
-                                                    Expanded(
-                                                      child: Text(
-                                                        'Email dan kata sandi harus diisi',
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                backgroundColor:
-                                                    Colors.redAccent.shade700,
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                margin: const EdgeInsets.all(
-                                                  16,
-                                                ),
-                                                elevation: 4,
-                                              ),
-                                            );
-                                            return;
-                                          }
-
-                                          final success = await ref
-                                              .read(authProvider.notifier)
-                                              .login(email, password, rememberMe: rememberMe);
-
-                                          if (!context.mounted) return;
-
-                                          if (success) {
-                                            final role = ref
-                                                .read(authProvider)
-                                                .role;
-                                            if (role == 'admin') {
-                                              context.go('/admin/dashboard');
-                                            } else if (role == 'petugas' ||
-                                                role == 'officer') {
-                                              context.go('/petugas/main');
-                                            } else {
-                                              context.go('/dashboard'); // Warga
-                                            }
-                                          } else {
-                                            final error = ref
-                                                .read(authProvider)
-                                                .error;
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons.error_outline,
-                                                      color: Colors.white,
-                                                    ),
-                                                    const SizedBox(width: 12),
-                                                    Expanded(
-                                                      child: Text(
-                                                        error ?? 'Login gagal',
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                backgroundColor:
-                                                    Colors.redAccent.shade700,
-                                                behavior:
-                                                    SnackBarBehavior.floating,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(12),
-                                                ),
-                                                margin: const EdgeInsets.all(
-                                                  16,
-                                                ),
-                                                elevation: 4,
-                                              ),
-                                            );
-                                          }
-                                        },
+                                      : _submitLogin,
                                   child: authState.isLoading
                                       ? const CircularProgressIndicator(
                                           color: Colors.white,
