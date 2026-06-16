@@ -13,7 +13,6 @@ import '../data/upload_repository.dart';
 import '../data/report_provider.dart';
 import '../../../shared/notification/presentation/widgets/notification_bell_button.dart';
 import '../../../shared/notification/data/notification_provider.dart';
-import '../../../shared/auth/data/auth_provider.dart';
 
 class CreateReportScreen extends ConsumerStatefulWidget {
   const CreateReportScreen({super.key});
