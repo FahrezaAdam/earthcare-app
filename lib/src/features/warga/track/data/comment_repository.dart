@@ -39,4 +39,17 @@ class CommentRepository {
       throw Exception('Gagal menambahkan komentar: $e');
     }
   }
+
+  Future<void> deleteComment(String commentId) async {
+    try {
+      final response = await _apiClient.dio.delete('/api/comments/$commentId');
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception(
+          response.data['message'] ?? 'Gagal menghapus komentar',
+        );
+      }
+    } catch (e) {
+      throw Exception('Gagal menghapus komentar: $e');
+    }
+  }
 }

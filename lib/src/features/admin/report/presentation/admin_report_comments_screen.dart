@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../warga/report/data/report_model.dart';
 import '../../../warga/report/data/report_provider.dart';
 import '../../../warga/track/data/comment_provider.dart';
+import '../../../shared/auth/data/auth_provider.dart';
 
 class AdminReportCommentsScreen extends ConsumerStatefulWidget {
   final ReportModel report;
@@ -56,8 +57,48 @@ class _AdminReportCommentsScreenState
     }
   }
 
+  Future<void> _deleteComment(String commentId) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Komentar'),
+        content: const Text('Yakin ingin menghapus komentar ini?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      await ref.read(commentRepositoryProvider).deleteComment(commentId);
+      ref.invalidate(commentsProvider(widget.report.id));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Komentar berhasil dihapus')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal menghapus: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authProvider).user;
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -184,14 +225,32 @@ class _AdminReportCommentsScreenState
                                             ),
                                           ],
                                         ),
-                                        Text(
-                                          DateFormat(
-                                            'dd/MM HH:mm',
-                                          ).format(c.createdAt),
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                            color: Colors.grey,
-                                          ),
+                                        Row(
+                                          children: [
+                                            Text(
+                                              DateFormat(
+                                                'dd/MM HH:mm',
+                                              ).format(c.createdAt),
+                                              style: const TextStyle(
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                            if (currentUser != null &&
+                                                (c.userId == currentUser['id'] ||
+                                                    currentUser['role'] ==
+                                                        'admin')) ...[
+                                              const SizedBox(width: 8),
+                                              GestureDetector(
+                                                onTap: () => _deleteComment(c.id),
+                                                child: const Icon(
+                                                  Icons.delete_outline,
+                                                  size: 14,
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                       ],
                                     ),

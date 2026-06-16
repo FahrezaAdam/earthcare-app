@@ -150,7 +150,18 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 Positioned.fill(
                   child: reportsAsync.when(
                     data: (reports) {
-                      final markers = reports.map((data) {
+                      final now = DateTime.now();
+                      final activeReports = reports.where((data) {
+                        if (data.status.toLowerCase() == 'resolved') {
+                          if (data.updatedAt != null) {
+                            return now.difference(data.updatedAt!).inDays <= 3;
+                          }
+                          return true; // Default to showing if we don't know when it was resolved
+                        }
+                        return true;
+                      }).toList();
+
+                      final markers = activeReports.map((data) {
                         // Determine color based on status
                         Color markerColor;
                         if (data.commentCount >= 5) {

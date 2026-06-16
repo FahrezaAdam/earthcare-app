@@ -19,6 +19,7 @@ class ReportModel {
   final String? assignedOfficerId; // legacy
   final List<String> assignedOfficerIds;
   final int commentCount;
+  final DateTime? updatedAt;
 
   ReportModel({
     required this.id,
@@ -40,6 +41,7 @@ class ReportModel {
     this.assignedOfficerId,
     this.assignedOfficerIds = const [],
     this.commentCount = 0,
+    this.updatedAt,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
@@ -106,17 +108,24 @@ class ReportModel {
           json['user']?['name']?.toString() ??
           json['profiles']?['full_name']?.toString() ??
           'Warga Anonim',
-      reporterAvatar: json['users']?['avatar_url']?.toString(),
-      reporterPhone: json['users']?['phone']?.toString(),
-      assignedOfficerId: json['assigned_officer_id']?.toString(),
+      reporterAvatar:
+          json['users']?['avatar_url']?.toString() ??
+          json['reporterAvatar']?.toString(),
+      reporterPhone:
+          json['users']?['phone']?.toString() ??
+          json['reporterPhone']?.toString(),
+      assignedOfficerId:
+          json['assigned_officer_id']?.toString() ??
+          json['assignedOfficerId']?.toString(),
       assignedOfficerIds: officerIds,
       commentCount: count,
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()).toLocal() : null,
     );
   }
 
-  static String _formatDate(String dateStr) {
+  static String _formatDate(String? dateString) {
     try {
-      final date = DateTime.parse(dateStr);
+      final date = DateTime.parse(dateString!);
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
       return 'Baru saja';
