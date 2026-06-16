@@ -631,13 +631,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             ],
                             const SizedBox(height: 24),
                             // Button
-                            if (userRole != 'warga')
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: ElevatedButton(
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 56,
+                                    child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.white,
                                           foregroundColor: const Color(
@@ -699,15 +698,20 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                         ),
                                         onPressed: () {
                                           if (_selectedData != null) {
-                                            context.push(
-                                              '/track-detail',
-                                              extra: {
-                                                'title': _selectedData!.title,
-                                                'ticketId':
-                                                    _selectedData!.ticketId,
-                                                'report': _selectedData,
-                                              },
-                                            );
+                                            if (userRole == 'admin') {
+                                              context.push('/admin/report-detail', extra: _selectedData);
+                                            } else if (userRole == 'petugas') {
+                                              context.push('/petugas/report-detail', extra: _selectedData);
+                                            } else {
+                                              context.push(
+                                                '/track-detail',
+                                                extra: {
+                                                  'title': _selectedData!.title,
+                                                  'ticketId': _selectedData!.ticketId,
+                                                  'report': _selectedData,
+                                                },
+                                              );
+                                            }
                                           }
                                         },
                                         child: Row(
@@ -717,6 +721,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                             Text(
                                               _getActionButtonText(
                                                 _selectedData?.status,
+                                                userRole,
                                               ),
                                               style: const TextStyle(
                                                 color: Colors.white,
@@ -733,53 +738,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                           ],
                                         ),
                                       ),
+                                      ),
                                     ),
                                   ),
                                 ],
-                              )
-                            else
-                              SizedBox(
-                                width: double.infinity,
-                                height: 56,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0C3B2E),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    if (_selectedData != null) {
-                                      context.push(
-                                        '/track-detail',
-                                        extra: {
-                                          'title': _selectedData!.title,
-                                          'ticketId': _selectedData!.ticketId,
-                                          'report': _selectedData,
-                                        },
-                                      );
-                                    }
-                                  },
-                                  child: const Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Lihat Detail Laporan',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Icon(
-                                        Icons.arrow_forward,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ),
                             const SizedBox(height: 24),
                           ],
@@ -796,11 +758,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  String _getActionButtonText(String? status) {
+  String _getActionButtonText(String? status, String role) {
+    if (role == 'warga') return 'Detail';
     if (status == null) return 'Detail';
-    switch (status.toLowerCase()) {
+    final s = status.toLowerCase();
+    
+    if (role == 'petugas') {
+      if (s == 'resolved') return 'Detail Tugas';
+      if (s == 'assigned') return 'Terima Tugas';
+      return 'Update Tugas';
+    }
+    
+    switch (s) {
       case 'received':
-        return 'Verifikasi';
       case 'kritis':
         return 'Verifikasi';
       case 'verified':
@@ -812,7 +782,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       case 'resolved':
         return 'Detail';
       default:
-        return 'Detail';
+        return 'Kelola';
     }
   }
 
