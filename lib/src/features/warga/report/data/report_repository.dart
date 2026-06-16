@@ -17,10 +17,12 @@ class ReportRepository {
     String filter = 'all',
   }) async {
     try {
-      final queryParams = {
-        'category': ?category,
-        'status': ?status,
+      final queryParams = <String, dynamic>{
+        'page': page,
+        'limit': limit,
       };
+      if (category != null) queryParams['category'] = category;
+      if (status != null) queryParams['status'] = status;
 
       final endpoint = filter == 'me' ? '/api/reports/me' : '/api/reports';
       final response = await _apiClient.dio.get(
