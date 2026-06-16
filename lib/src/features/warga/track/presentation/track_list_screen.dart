@@ -163,6 +163,8 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                         category: _formatCategory(report.category),
                         location: report.location,
                         time: report.time,
+                        reporterName: report.reporterName ?? 'Warga',
+                        reporterAvatar: report.reporterAvatar,
                         isCompleted: report.isCompleted,
                         rawReport:
                             report, // Pass the whole object if needed for detail screen
@@ -271,6 +273,8 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
     required String category,
     required String location,
     required String time,
+    required String reporterName,
+    required String? reporterAvatar,
     required bool isCompleted,
     required dynamic rawReport,
     required String? currentUserId,
@@ -388,6 +392,32 @@ class _TrackListScreenState extends ConsumerState<TrackListScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
+
+                  // Reporter Info
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Colors.grey[200],
+                        backgroundImage: reporterAvatar != null
+                            ? NetworkImage(reporterAvatar)
+                            : null,
+                        child: reporterAvatar == null
+                            ? const Icon(Icons.person, size: 12, color: Colors.grey)
+                            : null,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        reporterName,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
                   // Details
                   Row(
