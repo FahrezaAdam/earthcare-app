@@ -54,6 +54,18 @@ class OfficerRepository {
       );
     }
   }
+  Future<void> deleteOfficer(String id) async {
+    try {
+      final response = await _apiClient.dio.delete('/api/auth/officers/$id');
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus petugas');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? 'Gagal menghapus petugas',
+      );
+    }
+  }
 }
 
 final officerRepositoryProvider = Provider<OfficerRepository>((ref) {

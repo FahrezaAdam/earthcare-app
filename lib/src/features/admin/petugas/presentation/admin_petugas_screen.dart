@@ -73,6 +73,9 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
             if (_selectedFilter == 'Sedang Bertugas') {
               return o.officerStatus == 'Sedang Bertugas';
             }
+            if (_selectedFilter == 'Tidak Bertugas') {
+              return o.officerStatus == 'Aktif';
+            }
             return true;
           }).toList();
 
@@ -144,8 +147,6 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
                                       const SizedBox(height: 4),
                                       Row(
                                         children: [
-                                          const Icon(Icons.check_circle, color: Colors.greenAccent, size: 14),
-                                          const SizedBox(width: 4),
                                           Text(
                                             '$aktifCount Tersedia',
                                             style: const TextStyle(
@@ -154,8 +155,6 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
                                             ),
                                           ),
                                           const SizedBox(width: 12),
-                                          const Icon(Icons.work, color: Colors.orangeAccent, size: 14),
-                                          const SizedBox(width: 4),
                                           Text(
                                             '$bertugasCount Bertugas',
                                             style: const TextStyle(
@@ -213,6 +212,8 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
                             _buildFilterChip('Semua Petugas'),
                             const SizedBox(width: 8),
                             _buildFilterChip('Sedang Bertugas'),
+                            const SizedBox(width: 8),
+                            _buildFilterChip('Tidak Bertugas'),
                           ],
                         ),
                         const SizedBox(height: 24),
@@ -369,22 +370,88 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () =>
-                  context.push('/admin/petugas/profile', extra: officer),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0D2818),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: () =>
+                        context.push('/admin/petugas/profile', extra: officer),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0D2818),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    child: const Text(
+                      'Kelola',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
               ),
-              child: const Text(
-                'Kelola',
-                style: TextStyle(color: Colors.white),
+              const SizedBox(width: 12),
+              SizedBox(
+                height: 48,
+                width: 48,
+                child: ElevatedButton(
+                  onPressed: () => _confirmDeleteOfficer(officer),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    backgroundColor: Colors.red[50],
+                    foregroundColor: Colors.red[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      side: BorderSide(color: Colors.red[200]!),
+                    ),
+                  ),
+                  child: const Icon(Icons.delete_outline),
+                ),
               ),
-            ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDeleteOfficer(Officer officer) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Petugas'),
+        content: Text('Apakah Anda yakin ingin menghapus ${officer.name}? Tindakan ini tidak dapat dibatalkan.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Batal', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                // Tampilkan loading sebentar
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Menghapus petugas...')),
+                );
+                await ref.read(officerRepositoryProvider).deleteOfficer(officer.id);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Petugas berhasil dihapus')),
+                  );
+                }
+                ref.invalidate(officersProvider);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red[700]),
+            child: const Text('Hapus', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),

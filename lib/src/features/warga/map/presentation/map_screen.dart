@@ -303,7 +303,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'URGENSI',
+                          'KETERANGAN',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
@@ -311,11 +311,15 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                           ),
                         ),
                         const SizedBox(height: 8),
-                        _legendItem(Colors.red, 'Kritis'),
+                        _legendItem(Colors.red[700]!, 'Kritis'),
                         const SizedBox(height: 4),
                         _legendItem(Colors.orange, 'Aktif'),
                         const SizedBox(height: 4),
+                        _legendItem(Colors.purple, 'Diproses'),
+                        const SizedBox(height: 4),
                         _legendItem(Colors.green, 'Teratasi'),
+                        const SizedBox(height: 4),
+                        _legendItem(Colors.blue, 'Lokasi Anda'),
                       ],
                     ),
                   ),

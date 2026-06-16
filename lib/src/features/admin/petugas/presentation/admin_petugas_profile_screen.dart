@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../warga/report/data/report_provider.dart';
 import '../data/officer_model.dart';
 
-class AdminPetugasProfileScreen extends StatelessWidget {
+class AdminPetugasProfileScreen extends ConsumerWidget {
   final Officer officer;
 
   const AdminPetugasProfileScreen({super.key, required this.officer});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reportsAsyncValue = ref.watch(reportsProvider('all'));
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -115,12 +120,6 @@ class AdminPetugasProfileScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  _buildContactInfo(
-                    Icons.location_on_outlined,
-                    'Berdasarkan penugasan',
-                  ),
-                  const SizedBox(height: 12),
                   _buildContactInfo(Icons.email_outlined, officer.email),
                   const SizedBox(height: 12),
                   _buildContactInfo(
@@ -154,147 +153,204 @@ class AdminPetugasProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Current Task
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tugas Saat Ini',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[100],
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          officer.officerStatus == 'Sedang Bertugas'
-                              ? 'Sedang Berjalan'
-                              : 'Tidak Ada',
-                          style: TextStyle(
-                            color: Colors.orange[800],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  if (officer.officerStatus == 'Sedang Bertugas') ...[
-                    const Text(
-                      'Pembersihan Bantaran Sungai & Survei Erosi', // Mock data
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1B4332),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Melakukan operasi pembersihan limbah yang komprehensif dan pemetaan stabilitas tanah di sepanjang cabang utara sistem Estuari.',
-                      style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 14,
-                        height: 1.5,
-                      ),
-                    ),
-                  ] else ...[
-                    const Text(
-                      'Petugas ini sedang tidak mengerjakan tugas apapun saat ini.',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
+            // Use real data from reportsProvider
+            reportsAsyncValue.when(
+              data: (reports) {
+                // Filter reports for this officer
+                final officerReports = reports
+                    .where((r) =>
+                        r.assignedOfficerIds.contains(officer.id) ||
+                        r.assignedOfficerId == officer.id)
+                    .toList();
 
-            // Task History
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Riwayat Tugas',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  // Mock History Item
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green[100],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.park,
-                          color: Colors.green[800],
-                          size: 20,
-                        ),
+                final currentTasks = officerReports
+                    .where((r) =>
+                        r.status.toLowerCase() == 'assigned' ||
+                        r.status.toLowerCase() == 'in_progress')
+                    .toList();
+
+                final historyTasks = officerReports
+                    .where((r) => r.status.toLowerCase() == 'resolved')
+                    .toList();
+
+                return Column(
+                  children: [
+                    // Current Task
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.grey[200]!),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Tugas Saat Ini',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: currentTasks.isNotEmpty
+                                      ? Colors.orange[100]
+                                      : Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  currentTasks.isNotEmpty
+                                      ? 'Sedang Berjalan'
+                                      : 'Tidak Ada',
+                                  style: TextStyle(
+                                    color: currentTasks.isNotEmpty
+                                        ? Colors.orange[800]
+                                        : Colors.grey[600],
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          if (currentTasks.isNotEmpty) ...[
+                            ...currentTasks.map((task) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        task.title,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1B4332),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        task.description ??
+                                            'Lokasi: ${task.location}',
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.black54,
+                                          fontSize: 14,
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                          ] else ...[
                             const Text(
-                              'Reforestasi Zona A-2',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Selesai • 12 Okt 2023',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 12,
-                              ),
+                              'Petugas ini sedang tidak mengerjakan tugas apapun saat ini.',
+                              style: TextStyle(color: Colors.grey),
                             ),
                           ],
-                        ),
+                        ],
                       ),
-                      const Text(
-                        'Proyek 08j',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Task History
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.grey[200]!),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Riwayat Tugas',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 16),
+                          if (historyTasks.isEmpty)
+                            const Text(
+                              'Belum ada riwayat tugas yang selesai.',
+                              style: TextStyle(color: Colors.grey),
+                            )
+                          else
+                            ...historyTasks.map((task) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green[100],
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          Icons.check_circle_outline,
+                                          color: Colors.green[800],
+                                          size: 20,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              task.title,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Selesai • ${task.time}',
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        task.ticketId,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+              loading: () => const Center(
+                  child: CircularProgressIndicator(color: Color(0xFF1B4332))),
+              error: (err, stack) =>
+                  Center(child: Text('Gagal memuat data: $err')),
             ),
           ],
         ),
