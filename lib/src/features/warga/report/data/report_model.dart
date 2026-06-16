@@ -119,8 +119,17 @@ class ReportModel {
           json['assignedOfficerId']?.toString(),
       assignedOfficerIds: officerIds,
       commentCount: count,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'].toString()).toLocal() : null,
+      updatedAt: _parseDateSafe(json['updated_at']),
     );
+  }
+
+  static DateTime? _parseDateSafe(dynamic value) {
+    if (value == null) return null;
+    try {
+      return DateTime.parse(value.toString()).toLocal();
+    } catch (_) {
+      return null;
+    }
   }
 
   static String _formatDate(String? dateString) {
