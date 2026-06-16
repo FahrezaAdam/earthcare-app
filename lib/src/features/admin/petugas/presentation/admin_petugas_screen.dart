@@ -55,12 +55,11 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
       ),
       body: officersAsync.when(
         data: (officers) {
-          final activeCount = officers
-              .where(
-                (o) =>
-                    o.officerStatus == 'Aktif' ||
-                    o.officerStatus == 'Sedang Bertugas',
-              )
+          final aktifCount = officers
+              .where((o) => o.officerStatus == 'Aktif')
+              .length;
+          final bertugasCount = officers
+              .where((o) => o.officerStatus == 'Sedang Bertugas')
               .length;
 
           var filteredOfficers = officers.where((o) {
@@ -143,12 +142,28 @@ class _AdminPetugasScreenState extends ConsumerState<AdminPetugasScreen> {
                                         ),
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        '$activeCount Aktif sekarang',
-                                        style: const TextStyle(
-                                          color: Colors.greenAccent,
-                                          fontSize: 12,
-                                        ),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.check_circle, color: Colors.greenAccent, size: 14),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '$aktifCount Tersedia',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          const Icon(Icons.work, color: Colors.orangeAccent, size: 14),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '$bertugasCount Bertugas',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),

@@ -61,10 +61,10 @@ class PushNotificationService {
     // Set foreground notification options for iOS
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
     // 4. Configure foreground message listener
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -93,9 +93,8 @@ class PushNotificationService {
     AndroidNotificationChannel channel,
   ) {
     RemoteNotification? notification = message.notification;
-    AndroidNotification? android = message.notification?.android;
 
-    if (notification != null && android != null) {
+    if (notification != null) {
       _localNotificationsPlugin.show(
         id: notification.hashCode,
         title: notification.title,

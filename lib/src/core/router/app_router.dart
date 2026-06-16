@@ -30,12 +30,13 @@ import '../../features/admin/petugas/presentation/admin_petugas_profile_screen.d
 import '../../features/admin/petugas/data/officer_model.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
+  // Only watch the role to prevent GoRouter from being recreated on isLoading/error changes
+  final authRole = ref.watch(authProvider.select((state) => state.role));
 
   return GoRouter(
     initialLocation: '/login',
     redirect: (context, state) {
-      final isAuth = authState.role != null;
+      final isAuth = authRole != null;
       final isGoingToLogin = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password' ||
@@ -49,8 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       if (isAuth && isGoingToLogin) {
-        if (authState.role == 'admin') return '/admin/dashboard';
-        if (authState.role == 'petugas' || authState.role == 'officer') {
+        if (authRole == 'admin') return '/admin/dashboard';
+        if (authRole == 'petugas' || authRole == 'officer') {
           return '/petugas/main';
         }
         return '/dashboard';
