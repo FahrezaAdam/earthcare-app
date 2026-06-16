@@ -8,7 +8,7 @@ final reportsProvider = FutureProvider.family<List<ReportModel>, String>((
   filter,
 ) async {
   final repository = ref.watch(reportRepositoryProvider);
-  return await repository.getReports(filter: filter);
+  return await repository.getReports(filter: filter, limit: 200);
 });
 
 final heatmapProvider = FutureProvider<List<HeatmapData>>((ref) async {

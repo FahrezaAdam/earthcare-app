@@ -150,7 +150,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                 Positioned.fill(
                   child: reportsAsync.when(
                     data: (reports) {
-                      final markers = reports.map((data) {
+                      final filteredReports = reports.where((data) {
+                        if (userRole == 'petugas') {
+                          final userId = authState.user?['id'];
+                          if (userId == null) return false;
+                          if (!data.assignedOfficerIds.contains(userId) &&
+                              data.assignedOfficerId != userId) {
+                            return false;
+                          }
+                        }
+                        return true;
+                      }).toList();
+
+                      final markers = filteredReports.map((data) {
                         // Determine color based on status
                         Color markerColor;
                         if (data.commentCount >= 5) {
