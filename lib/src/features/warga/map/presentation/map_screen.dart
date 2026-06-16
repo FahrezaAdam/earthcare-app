@@ -164,25 +164,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
 
                       final markers = filteredReports.map((data) {
                         // Determine color based on status
-                        Color markerColor;
-                        if (data.commentCount >= 5) {
-                          markerColor = Colors.red[700]!; // Kritis (Urgent)
-                        } else {
-                          switch (data.status.toLowerCase()) {
-                            case 'received':
-                            case 'assigned':
-                              markerColor = Colors.orange; // Aktif
-                              break;
-                            case 'in_progress':
-                              markerColor = Colors.purple; // Sedang diproses
-                              break;
-                            case 'resolved':
-                              markerColor = Colors.green; // Teratasi
-                              break;
-                            default:
-                              markerColor = Colors.orange; // Default Aktif
-                          }
-                        }
+                        Color markerColor = _getReportColor(data);
 
                         return Marker(
                           point: LatLng(
@@ -491,57 +473,14 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color:
-                                          (_selectedData?.category
-                                                      .toLowerCase()
-                                                      .contains('limbah') ==
-                                                  true ||
-                                              _selectedData?.category
-                                                      .toLowerCase()
-                                                      .contains('sampah') ==
-                                                  true)
-                                          ? Colors.red[50]
-                                          : (_selectedData?.category
-                                                        .toLowerCase()
-                                                        .contains('hutan') ==
-                                                    true
-                                                ? Colors.green[50]
-                                                : Colors.orange[50]),
+                                      color: _getReportColor(_selectedData)
+                                          .withValues(alpha: 0.1),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      (_selectedData?.category
-                                                      .toLowerCase()
-                                                      .contains('limbah') ==
-                                                  true ||
-                                              _selectedData?.category
-                                                      .toLowerCase()
-                                                      .contains('sampah') ==
-                                                  true)
-                                          ? 'KRITIS'
-                                          : (_selectedData?.category
-                                                        .toLowerCase()
-                                                        .contains('hutan') ==
-                                                    true
-                                                ? 'TERATASI'
-                                                : 'AKTIF'),
+                                      _getReportStatusLabel(_selectedData),
                                       style: TextStyle(
-                                        color:
-                                            (_selectedData?.category
-                                                        .toLowerCase()
-                                                        .contains('limbah') ==
-                                                    true ||
-                                                _selectedData?.category
-                                                        .toLowerCase()
-                                                        .contains('sampah') ==
-                                                    true)
-                                            ? Colors.red
-                                            : (_selectedData?.category
-                                                          .toLowerCase()
-                                                          .contains('hutan') ==
-                                                      true
-                                                  ? Colors.green
-                                                  : Colors.orange),
+                                        color: _getReportColor(_selectedData),
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -631,118 +570,96 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                             ],
                             const SizedBox(height: 24),
                             // Button
+                            // Button
                             Row(
                               children: [
                                 Expanded(
                                   child: SizedBox(
                                     height: 56,
                                     child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.white,
-                                          foregroundColor: const Color(
-                                            0xFF0C3B2E,
-                                          ),
-                                          side: const BorderSide(
-                                            color: Color(0xFF0C3B2E),
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: const Color(0xFF0C3B2E),
+                                        side: const BorderSide(color: Color(0xFF0C3B2E)),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
-                                        onPressed: () async {
-                                          if (_selectedData?.latitude != null &&
-                                              _selectedData?.longitude !=
-                                                  null) {
-                                            final url = Uri.parse(
-                                              'https://www.google.com/maps/dir/?api=1&destination=${_selectedData!.latitude},${_selectedData!.longitude}',
-                                            );
-                                            if (await canLaunchUrl(url)) {
-                                              await launchUrl(url);
-                                            }
+                                      ),
+                                      onPressed: () async {
+                                        if (_selectedData?.latitude != null &&
+                                            _selectedData?.longitude != null) {
+                                          final url = Uri.parse(
+                                            'https://www.google.com/maps/dir/?api=1&destination=${_selectedData!.latitude},${_selectedData!.longitude}',
+                                          );
+                                          if (await canLaunchUrl(url)) {
+                                            await launchUrl(url);
                                           }
-                                        },
-                                        child: const Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.directions, size: 16),
-                                            SizedBox(width: 8),
-                                            Text(
-                                              'Rute',
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                        }
+                                      },
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.directions, size: 16),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Rute',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFF0C3B2E,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              12,
-                                            ),
-                                          ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: SizedBox(
+                                    height: 56,
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF0C3B2E),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
                                         ),
-                                        onPressed: () {
-                                          if (_selectedData != null) {
-                                            if (userRole == 'admin') {
-                                              context.push('/admin/report-detail', extra: _selectedData);
-                                            } else if (userRole == 'petugas') {
-                                              context.push('/petugas/report-detail', extra: _selectedData);
-                                            } else {
-                                              context.push(
-                                                '/track-detail',
-                                                extra: {
-                                                  'title': _selectedData!.title,
-                                                  'ticketId': _selectedData!.ticketId,
-                                                  'report': _selectedData,
-                                                },
-                                              );
-                                            }
-                                          }
-                                        },
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              _getActionButtonText(
-                                                _selectedData?.status,
-                                                userRole,
-                                              ),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            const Icon(
-                                              Icons.arrow_forward,
+                                      ),
+                                      onPressed: () {
+                                        if (_selectedData != null) {
+                                          context.push(
+                                            '/track-detail',
+                                            extra: {
+                                              'title': _selectedData!.title,
+                                              'ticketId': _selectedData!.ticketId,
+                                              'report': _selectedData,
+                                            },
+                                          );
+                                        }
+                                      },
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Detail',
+                                            style: TextStyle(
                                               color: Colors.white,
-                                              size: 16,
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
                                             ),
-                                          ],
-                                        ),
-                                      ),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Icon(
+                                            Icons.arrow_forward,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 24),
                           ],
                         ),
@@ -758,31 +675,39 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     );
   }
 
-  String _getActionButtonText(String? status, String role) {
-    if (role == 'warga') return 'Detail';
-    if (status == null) return 'Detail';
-    final s = status.toLowerCase();
-    
-    if (role == 'petugas') {
-      if (s == 'resolved') return 'Detail Tugas';
-      if (s == 'assigned') return 'Terima Tugas';
-      return 'Update Tugas';
+  Color _getReportColor(ReportModel? data) {
+    if (data == null) return Colors.grey;
+    if (data.commentCount >= 5) {
+      return Colors.red[700]!; // Kritis
     }
-    
-    switch (s) {
+    switch (data.status.toLowerCase()) {
       case 'received':
-      case 'kritis':
-        return 'Verifikasi';
-      case 'verified':
-        return 'Tugaskan';
       case 'assigned':
-        return 'Pantau';
+        return Colors.orange; // Aktif
       case 'in_progress':
-        return 'Update';
+        return Colors.purple; // Diproses
       case 'resolved':
-        return 'Detail';
+        return Colors.green; // Teratasi
       default:
-        return 'Kelola';
+        return Colors.orange;
+    }
+  }
+
+  String _getReportStatusLabel(ReportModel? data) {
+    if (data == null) return 'MENUNGGU';
+    if (data.commentCount >= 5) {
+      return 'KRITIS';
+    }
+    switch (data.status.toLowerCase()) {
+      case 'received':
+      case 'assigned':
+        return 'AKTIF';
+      case 'in_progress':
+        return 'DIPROSES';
+      case 'resolved':
+        return 'TERATASI';
+      default:
+        return 'AKTIF';
     }
   }
 
