@@ -1,10 +1,10 @@
-# EarthCare 🌍
+# EarthCare 
 
 EarthCare adalah aplikasi pelaporan lingkungan berbasis mobile yang memberdayakan masyarakat untuk melaporkan masalah lingkungan (seperti tumpukan sampah liar, sungai tercemar, pohon tumbang, dll.) dan memungkinkan pihak berwenang untuk menangani masalah tersebut dengan cepat dan efisien.
 
 Aplikasi ini dibangun menggunakan **Flutter** dan **Supabase**.
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
 Aplikasi ini memiliki tiga peran utama (*role*), masing-masing dengan fitur yang disesuaikan:
 
@@ -24,36 +24,12 @@ Aplikasi ini memiliki tiga peran utama (*role*), masing-masing dengan fitur yang
 - **Distribusi Tugas**: Menugaskan laporan yang sudah diverifikasi kepada petugas lapangan (Officer) terkait.
 - **Manajemen Pengguna & Petugas**: Mengatur akun pengguna dan peran di dalam sistem.
 
-## 🛠️ Teknologi yang Digunakan
+## Teknologi yang Digunakan
 - **Frontend**: Flutter (Dart)
 - **State Management**: Riverpod
 - **Routing**: GoRouter
 - **Maps**: Flutter Map (OpenStreetMap)
 - **Backend / Database**: Supabase & Custom Express.js API
 
-## ⚙️ Cara Menjalankan Aplikasi Lokal
-
-1. **Clone repository ini**:
-   ```bash
-   git clone https://github.com/FahrezaAdam/earthcare-app.git
-   cd earth_care
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   flutter pub get
-   ```
-
-3. **Konfigurasi Environment Variables**:
-   Pastikan Anda sudah mengatur endpoint API yang mengarah ke backend EarthCare di `.env` atau *constants* yang sesuai.
-
-4. **Jalankan aplikasi**:
-   ```bash
-   flutter run
-   ```
-
-## 🤝 Berkontribusi
-Kami sangat menyambut kontribusi! Jika Anda menemukan *bug* atau ingin menambahkan fitur baru, silakan buat *Pull Request* atau buka *Issue*.
-
 ---
-Dibuat untuk menjaga lingkungan kita bersama! 🌳♻️
+Dibuat untuk menjaga lingkungan kita bersama!
